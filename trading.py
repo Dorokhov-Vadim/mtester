@@ -15,14 +15,15 @@ class CandleEvent:
 
 
 class Position:
-    instrument: Instrument = None
-    count = 0
-    # margin = 0
-    mean_price = 0
-    # price => count
-    stop_loses: Dict[float, int] = {}
-    # price => count
-    take_profits: Dict[float, int] = {}
+    def __init__(self, instrument: Instrument):
+        self.instrument: Instrument = instrument
+        self.count = 0
+        # margin = 0
+        self.mean_price = 0
+        # price => count
+        self.stop_loses: Dict[float, int] = {}
+        # price => count
+        self.take_profits: Dict[float, int] = {}
 
     def set_stop_loss(self, price, count):
         self.stop_loses[price] = count
@@ -56,7 +57,8 @@ class Trade:
     def buy(self, instrument: Instrument, price: float, count: int):
         pos = self.pos_by_instrument(instrument)
         if pos is None:
-            raise Exception('Position not found')
+            pos = Position(instrument)
+            self.positions.append(pos)
         # add long position
         if pos.count >= 0:
             pos.mean_price = (pos.mean_price * pos.count + (price + pos.instrument.slip) * count)/(pos.count + count)
@@ -84,8 +86,9 @@ class Trade:
     def sell(self, instrument: Instrument, price: float, count: int):
         pos = self.pos_by_instrument(instrument)
         if pos is None:
-            raise Exception('Position not found')
-        # add short position
+            pos = Position(instrument)
+            self.positions.append(pos)
+            # add short position
         if pos.count <= 0:
             pos.mean_price = (pos.mean_price * abs(pos.count) + (price - pos.instrument.slip) * count) / abs(pos.count - count)
             pos.count = pos.count - count
