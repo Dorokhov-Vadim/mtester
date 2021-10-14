@@ -2,11 +2,9 @@
 
 
 class Instrument:
-    def __init__(self, ticker, price, step, step_price, slip):
+    def __init__(self, ticker, step, step_price, slip):
         # instrument ticker
         self.ticker = ticker
-        # instrument 1 lot price
-        self.price = price
         # minimal instrument step
         self.step = step
         # price of one instrument step
