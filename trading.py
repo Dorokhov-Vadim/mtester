@@ -2,17 +2,6 @@ from typing import List, Dict
 from .instruments import Instrument
 
 
-class CandleEvent:
-    def __init__(self):
-        self.candle_num = 0
-        self.open_price = 0
-        self.max_price = 0
-        self.min_price = 0
-        self.close_price = 0
-        self.volume = 0
-        self.date = None
-        self.time = None
-
 
 class Position:
     def __init__(self, instrument: Instrument):

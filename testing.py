@@ -1,5 +1,5 @@
 
-from .trading import CandleEvent
+from .providers import Candle
 
 
 class BaseTest:
