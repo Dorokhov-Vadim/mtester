@@ -13,7 +13,25 @@ class Candle:
         self.time = None
 
 
-class FinamCandlesProvider(Iterator):
+class BaseCandlesProvider(Iterator):
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> Candle:
+        raise Exception('BaseCandlesProvider subclass must implement __next__ method')
+
+
+class BaseSyncProvider(Iterator):
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> List[Candle]:
+        raise Exception('BaseSyncProvider subclass must implement __next__ method')
+
+
+class FinamCandlesProvider(BaseCandlesProvider):
 
     def __init__(self, filename, el_sep=';'):
         self.filename = filename
@@ -25,9 +43,6 @@ class FinamCandlesProvider(Iterator):
         for i in range(0, len(header)):
             self.el_indexes[i] = header[i].lstrip('<').rstrip('>')
 
-    def __iter__(self):
-        return self
-
     def __next__(self) -> Candle:
         row = next(self.file).rstrip()
         row = row.split(self.el_sep)
@@ -37,7 +52,7 @@ class FinamCandlesProvider(Iterator):
         return candle
 
 
-class FinamSyncProvider(Iterator):
+class FinamSyncProvider(BaseSyncProvider):
     def __init__(self, file_names: List, el_sep=';'):
         self.el_sep = el_sep
         self.timestamps: List[Set] = []
@@ -59,7 +74,7 @@ class FinamSyncProvider(Iterator):
     def __iter__(self):
         return self
 
-    def __next__(self):
+    def __next__(self) -> List[Candle]:
         candle_list = []
         for file in self.opened_files:
             for candle in file:
