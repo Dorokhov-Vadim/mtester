@@ -2,6 +2,19 @@ from typing import List, Dict
 from .instruments import Instrument
 
 
+class DeferredOrder:
+    def __init__(self, oper, order_type, price, count):
+        if oper not in ('B','S'):
+            raise Exception('oper param must be str "B" or "S"')
+        # B-buy, S-sell
+        self.oper: str = oper
+        if order_type not in ('L','M'):
+            raise Exception('oper param must be str "L"(limit order) or "M"(market order)')
+        # L-limit, M-market (market order use instrument.slip)
+        self.order_type: str = order_type
+        self.price: float = price
+        self.count: int = count
+
 
 class Position:
     def __init__(self, instrument: Instrument):
@@ -10,15 +23,10 @@ class Position:
         # margin = 0
         self.mean_price = 0
         # price => count
-        self.stop_loses: Dict[float, int] = {}
-        # price => count
-        self.take_profits: Dict[float, int] = {}
+        self.deferred_orders:List[DeferredOrder] = []
 
-    def set_stop_loss(self, price, count):
-        self.stop_loses[price] = count
-
-    def set_take_profit(self, price, count):
-        self.take_profits[price] = count
+    def set_defer_order(self, oper, order_type, price, count):
+        pass
 
 
 class Trade:
@@ -35,13 +43,8 @@ class Trade:
         ticker = instrument.ticker
         return self.pos_by_ticker(ticker)
 
-    def set_stop_loss(self, instrument: Instrument, price: float, count: int):
-        self.pos_by_instrument(instrument).set_stop_loss(price, count)
-
-    def set_take_profit(self, instrument: Instrument, price: float, count: int):
-        self.pos_by_instrument(instrument).set_take_profit(price, count)
-
-    # def add_position(self, ):
+    def set_defer_order(self, instrument: Instrument, oper, order_type, price: float, count: int):
+        self.pos_by_instrument(instrument).set_defer_order(oper, order_type, price, count)
 
     def buy(self, instrument: Instrument, price: float, count: int):
         pos = self.pos_by_instrument(instrument)
