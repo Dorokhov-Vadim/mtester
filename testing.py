@@ -20,13 +20,19 @@ class CandleTest(BaseTest):
         if self.data_provider is None:
             raise Exception('historical data is empty')
         print('Market testing is running...')
-        print('Market testing is done.')
 
         for data_batch in self.data_provider:
             if isinstance(self.data_provider, BaseCandlesProvider):
                 for position in self.strategy.trade.positions:
-                    pass
+                    for def_order in position.deferred_orders:
+                        if data_batch.low < def_order.price < data_batch.high:
+                            if def_order.oper == "B":
+                                self.strategy.trade.buy(position.instrument, def_order.price, def_order.count, def_order.order_type)
+                            if def_order.oper == "S":
+                                self.strategy.trade.sell(position.instrument, def_order.price, def_order.count, def_order.order_type)
 
             if isinstance(self.data_provider, BaseSyncProvider):
                 for position in self.strategy.trade.positions:
                     pass
+
+    print('Market testing is done.')
