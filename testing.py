@@ -4,7 +4,6 @@ from .providers import BaseCandlesProvider, BaseSyncProvider
 
 
 class BaseTest:
-
     def run(self):
         raise Exception('Testing class must implement run method')
 
@@ -34,5 +33,4 @@ class CandleTest(BaseTest):
             if isinstance(self.data_provider, BaseSyncProvider):
                 for position in self.strategy.trade.positions:
                     pass
-
-    print('Market testing is done.')
+        print('Market testing is done.')
