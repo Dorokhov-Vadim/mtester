@@ -21,16 +21,23 @@ class CandleTest(BaseTest):
         print('Market testing is running...')
 
         for data_batch in self.data_provider:
-            if isinstance(self.data_provider, BaseCandlesProvider):
-                for position in self.strategy.trade.positions:
-                    for def_order in position.deferred_orders:
-                        if data_batch.low < def_order.price < data_batch.high:
+            if not isinstance(data_batch, list):
+                data_batch = [data_batch]
+            for position in self.strategy.trade.positions:
+                for def_order in position.deferred_orders:
+                    for candle in data_batch:
+                        if candle.instrument is position.instrument and candle.low < def_order.price < candle.high:
                             if def_order.oper == "B":
-                                self.strategy.trade.buy(position.instrument, def_order.price, def_order.count, def_order.order_type)
+                                self.strategy.trade.buy(position.instrument, def_order.price, def_order.count,
+                                                        def_order.order_type)
+                                print('1 buy')
                             if def_order.oper == "S":
-                                self.strategy.trade.sell(position.instrument, def_order.price, def_order.count, def_order.order_type)
+                                self.strategy.trade.sell(position.instrument, def_order.price, def_order.count,
+                                                         def_order.order_type)
+                                print('1 sell')
+            self.strategy.on_candle_close(data_batch)
 
-            if isinstance(self.data_provider, BaseSyncProvider):
-                for position in self.strategy.trade.positions:
-                    pass
         print('Market testing is done.')
+
+        print(self.strategy.trade.positions[0].count)
+        print(self.strategy.trade.balance)

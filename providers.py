@@ -51,7 +51,7 @@ class FinamCandlesProvider(BaseCandlesProvider):
         row = row.split(self.el_sep)
         candle = Candle(self.instrument)
         for i in range(0, len(row)):
-            candle.__dict__[self.el_indexes[i].lower()] = row[i]
+            candle.__dict__[self.el_indexes[i].lower()] = float(row[i])
         return candle
 
 
