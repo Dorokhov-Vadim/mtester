@@ -28,11 +28,10 @@ class Position:
         # price => count
         self.deferred_orders: List[DeferredOrder] = []
 
-    def set_defer_order(self, oper, order_type, price, count):
+    def set_defer_order(self, oper, order_type, price, count) -> int:
         self.deferred_orders.append(DeferredOrder(oper, order_type, price, count))
-        pass
+        return self.deferred_orders[-1].order_id
 
-    # del order (order_id = 0 deletes first)
     def pop_defer_order(self, order_id) -> DeferredOrder:
         if order_id == 0 and len(self.deferred_orders) > 0:
             return self.deferred_orders.pop(0)

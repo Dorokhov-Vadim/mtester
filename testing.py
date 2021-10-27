@@ -1,7 +1,6 @@
 from .base_strategies import BaseCandleStrategy
 from typing import Iterable
-from .providers import BaseCandlesProvider, BaseSyncProvider
-
+from .trading import Position
 
 class BaseTest:
     def run(self):
@@ -30,14 +29,12 @@ class CandleTest(BaseTest):
                             if def_order.oper == "B":
                                 self.strategy.trade.buy(position.instrument, def_order.price, def_order.count,
                                                         def_order.order_type)
-                                print('1 buy')
+
                             if def_order.oper == "S":
                                 self.strategy.trade.sell(position.instrument, def_order.price, def_order.count,
                                                          def_order.order_type)
-                                print('1 sell')
-            self.strategy.on_candle_close(data_batch)
+
+            self.strategy.receive_data(data_batch)
 
         print('Market testing is done.')
 
-        print(self.strategy.trade.positions[0].count)
-        print(self.strategy.trade.balance)
