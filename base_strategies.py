@@ -1,12 +1,14 @@
-from typing import List
+from typing import List, Dict
 from .trading import Trade, Position
 from .providers import Candle
 from .instruments import Instrument
 
 
 class BaseCandleStrategy:
-    def __init__(self):
+    def __init__(self, window_size: int):
         self.trade = Trade()
+        self.window_size = window_size
+        self.candles_dict: Dict[Instrument, List] = {}
 
     def pos_by_ticker(self, ticker: str) -> Position:
         return self.trade.pos_by_ticker(ticker)
@@ -27,6 +29,11 @@ class BaseCandleStrategy:
         for candle in candles:
             if self.trade.pos_by_instrument(candle.instrument) is None:
                 self.trade.positions.append(Position(candle.instrument))
+            if self.candles_dict.get(candle.instrument) is None:
+                self.candles_dict[candle.instrument] = []
+            if len(self.candles_dict[candle.instrument]) >= self.window_size:
+                self.candles_dict[candle.instrument].pop(0)
+            self.candles_dict[candle.instrument].append(candle)
         self.on_candle_close(candles)
 
     def on_candle_close(self, candles: List[Candle]):

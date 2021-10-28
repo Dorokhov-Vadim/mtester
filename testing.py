@@ -36,5 +36,6 @@ class CandleTest(BaseTest):
 
             self.strategy.receive_data(data_batch)
 
+        print(self.strategy.trade.balance)
         print('Market testing is done.')
 

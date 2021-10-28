@@ -51,7 +51,12 @@ class FinamCandlesProvider(BaseCandlesProvider):
         row = row.split(self.el_sep)
         candle = Candle(self.instrument)
         for i in range(0, len(row)):
-            candle.__dict__[self.el_indexes[i].lower()] = float(row[i])
+            field_name = self.el_indexes[i].lower()
+            if field_name in ('date', 'time'):
+                field_val = str(row[i])
+            else:
+                field_val = float(row[i])
+            candle.__dict__[field_name] = field_val
         return candle
 
 

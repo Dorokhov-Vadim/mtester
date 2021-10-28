@@ -49,7 +49,7 @@ class Trade:
 
     def pos_by_ticker(self, ticker: str) -> Position:
         for pos in self.positions:
-            if pos.instrument.ticker == ticker:
+            if pos.instrument.ticker.lower() == ticker.lower():
                 return pos
 
     def pos_by_instrument(self, instrument: Instrument) -> Position:
