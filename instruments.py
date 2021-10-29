@@ -11,3 +11,4 @@ class Instrument:
         self.step_price = step_price
         # count of minimal instrument steps for sell/buy operation
         self.slip = slip
+

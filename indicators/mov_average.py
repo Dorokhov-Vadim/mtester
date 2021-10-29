@@ -19,3 +19,4 @@ class MovingAverage(BaseCandleIndicator):
         for candle in self.candles:
             cn_sum = cn_sum + candle.close
         return cn_sum/self.size
+

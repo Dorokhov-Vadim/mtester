@@ -1,5 +1,6 @@
 from typing import List
 from .instruments import Instrument
+from .trade_stat import TradeStat
 
 
 class DeferredOrder:
@@ -46,6 +47,8 @@ class Trade:
     def __init__(self):
         self.balance = 0
         self.positions: List[Position] = []
+        self.trans_count = 0
+        self.stat = TradeStat()
 
     def pos_by_ticker(self, ticker: str) -> Position:
         for pos in self.positions:
@@ -64,6 +67,7 @@ class Trade:
         pos.set_defer_order(oper, order_type, price, count)
 
     def buy(self, instrument: Instrument, price: float, count: int, order_type):
+        self.trans_count = self.trans_count + 1
         if order_type == 'M':
             slip = instrument.slip
         else:
@@ -82,6 +86,7 @@ class Trade:
             if abs(pos.count) >= count:
                 margin = (pos.mean_price - (price + slip)) * count
                 self.balance = self.balance + (margin//instrument.step)*instrument.step_price
+                self.stat.balance_history.append(self.balance)
                 # mean pos price is not changed
                 if count == abs(pos.count):
                     # all pos is closed
@@ -93,10 +98,12 @@ class Trade:
                 # if (short -> long)
                 margin = abs(pos.mean_price * pos.count) - (price + slip) * abs(pos.count)
                 self.balance = self.balance + (margin//instrument.step)*instrument.step_price
+                self.stat.balance_history.append(self.balance)
                 pos.count = count - abs(pos.count)
                 pos.mean_price = price + slip
 
     def sell(self, instrument: Instrument, price: float, count: int, order_type):
+        self.trans_count = self.trans_count + 1
         if order_type == 'M':
             slip = instrument.slip
         else:
@@ -115,6 +122,7 @@ class Trade:
             if abs(pos.count) >= count:
                 margin = ((price - slip) - pos.mean_price) * count
                 self.balance = self.balance + (margin // instrument.step) * instrument.step_price
+                self.stat.balance_history.append(self.balance)
                 # mean pos price is not changed
                 if count == abs(pos.count):
                     # all pos is closed
@@ -126,5 +134,6 @@ class Trade:
                 # if (long -> short)
                 margin = (price - slip) * abs(pos.count) - abs(pos.mean_price * pos.count)
                 self.balance = self.balance + (margin // instrument.step) * instrument.step_price
+                self.stat.balance_history.append(self.balance)
                 pos.count = abs(pos.count) - count
                 pos.mean_price = price - slip

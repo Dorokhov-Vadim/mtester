@@ -9,6 +9,7 @@ class BaseCandleStrategy:
         self.trade = Trade()
         self.window_size = window_size
         self.candles_dict: Dict[Instrument, List] = {}
+        self.cur_data = {}
 
     def pos_by_ticker(self, ticker: str) -> Position:
         return self.trade.pos_by_ticker(ticker)
