@@ -11,8 +11,16 @@ class Candle:
         self.low = 0
         self.close = 0
         self.vol = 0
-        self.date = None
-        self.time = None
+        self.date = ''
+        self.time = ''
+
+
+class CurCandle:
+    def __init__(self, instrument):
+        self.instrument = instrument
+        self.date = ''
+        self.time = ''
+        self.price = 0
 
 
 class BaseCandlesProvider(Iterator):

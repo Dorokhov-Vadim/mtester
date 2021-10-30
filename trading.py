@@ -66,7 +66,8 @@ class Trade:
             self.positions.append(pos)
         pos.set_defer_order(oper, order_type, price, count)
 
-    def buy(self, instrument: Instrument, price: float, count: int, order_type):
+    def buy(self, instrument: Instrument, price: float, count: int, order_type, date, time):
+        print('buy  : ' + date + ' / ' + time)
         self.trans_count = self.trans_count + 1
         if order_type == 'M':
             slip = instrument.slip
@@ -102,7 +103,8 @@ class Trade:
                 pos.count = count - abs(pos.count)
                 pos.mean_price = price + slip
 
-    def sell(self, instrument: Instrument, price: float, count: int, order_type):
+    def sell(self, instrument: Instrument, price: float, count: int, order_type, date, time):
+        print('sell : ' + date + ' / ' + time)
         self.trans_count = self.trans_count + 1
         if order_type == 'M':
             slip = instrument.slip
