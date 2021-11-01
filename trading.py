@@ -87,7 +87,6 @@ class Trade:
             if abs(pos.count) >= count:
                 margin = (pos.mean_price - (price + slip)) * count
                 self.balance = self.balance + (margin//instrument.step)*instrument.step_price
-                self.stat.balance_history.append(self.balance)
                 # mean pos price is not changed
                 if count == abs(pos.count):
                     # all pos is closed
@@ -99,7 +98,7 @@ class Trade:
                 # if (short -> long)
                 margin = abs(pos.mean_price * pos.count) - (price + slip) * abs(pos.count)
                 self.balance = self.balance + (margin//instrument.step)*instrument.step_price
-                self.stat.balance_history.append(self.balance)
+                # self.stat.balance_history.append(self.balance)
                 pos.count = count - abs(pos.count)
                 pos.mean_price = price + slip
 
@@ -124,7 +123,6 @@ class Trade:
             if abs(pos.count) >= count:
                 margin = ((price - slip) - pos.mean_price) * count
                 self.balance = self.balance + (margin // instrument.step) * instrument.step_price
-                self.stat.balance_history.append(self.balance)
                 # mean pos price is not changed
                 if count == abs(pos.count):
                     # all pos is closed
@@ -136,6 +134,6 @@ class Trade:
                 # if (long -> short)
                 margin = (price - slip) * abs(pos.count) - abs(pos.mean_price * pos.count)
                 self.balance = self.balance + (margin // instrument.step) * instrument.step_price
-                self.stat.balance_history.append(self.balance)
+                # self.stat.balance_history.append(self.balance)
                 pos.count = abs(pos.count) - count
                 pos.mean_price = price - slip
