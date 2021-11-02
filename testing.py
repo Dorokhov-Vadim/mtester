@@ -1,7 +1,6 @@
 from .base_strategies import BaseCandleStrategy
 from typing import Iterable
 from .providers import CurCandle
-from .trade_stat import TradeStat
 
 
 class BaseTest:
@@ -13,7 +12,13 @@ class CandleTest(BaseTest):
     def __init__(self, strategy: BaseCandleStrategy, data_provider: Iterable):
         self.strategy: BaseCandleStrategy = strategy
         self.data_provider = data_provider
-        self.trade_stat = TradeStat()
+
+    def show_instrument_stat(self, instrument):
+        self.strategy.trade.stat.show_instrument_stat(instrument)
+
+    def show_instrument(self, instrument):
+        self.strategy.trade.stat.show_instrument(instrument)
+
 
     def run(self):
         if self.strategy is None:
@@ -28,7 +33,6 @@ class CandleTest(BaseTest):
             if not isinstance(data_batch, list):
                 data_batch = [data_batch]
             if len(closed_candles) > 0:
-
                 for position in self.strategy.trade.positions:
                     for def_order in position.deferred_orders:
                         for candle in closed_candles:
@@ -55,17 +59,16 @@ class CandleTest(BaseTest):
                 # stat collection
                 lose = 0
                 for candle in closed_candles:
+                    print(candle.instrument.ticker)
                     for position in self.strategy.trade.positions:
                         if position.instrument is candle.instrument:
                             if position.mean_price > candle.low and position.count > 0:
                                 lose = (position.mean_price - candle.low) * position.count
                             if position.mean_price < candle.high and position.count < 0:
                                 lose = (candle.high - position.mean_price) * abs(position.count)
-                    self.trade_stat.add_candle(candle.instrument, candle.date, candle.time, candle.open, candle.low,
-                                               candle.high, candle.close, self.strategy.trade.balance, lose)
+                    self.strategy.trade.stat.add_candle(candle.instrument, candle.date, candle.time, candle.open, candle.low,
+                                                        candle.high, candle.close, self.strategy.trade.balance, lose)
                     print(candle.date + ' '+candle.time+' '+str(self.strategy.trade.balance) + ' '+str(lose))
-
-
 
                 cur_data_batch = dict()
                 for now_candle in data_batch:
@@ -83,6 +86,7 @@ class CandleTest(BaseTest):
         print('Market testing is done.')
         print('Balance: ' + str(self.strategy.trade.balance))
         print('Operation count: ' + str(self.strategy.trade.trans_count))
-        self.strategy.trade.stat.yield_curve()
+
+
 
 

@@ -23,9 +23,11 @@ class BaseCandleStrategy:
 
     def buy(self, instrument: Instrument, price: float, count: int, order_type):
         self.trade.buy(instrument, price, count, order_type, self.cur_date, self.cur_time)
+        self.trade.stat.add_buy(instrument, self.cur_date, self.cur_time, price, count)
 
     def sell(self, instrument: Instrument, price: float, count: int, order_type):
         self.trade.sell(instrument, price, count, order_type, self.cur_date, self.cur_time)
+        self.trade.stat.add_sell(instrument, self.cur_date, self.cur_time, price, count)
 
     def receive_data(self, candles: List[Candle], current_dict):
 
