@@ -68,7 +68,7 @@ class Trade:
 
     def buy(self, instrument: Instrument, price: float, count: int, order_type, date, time):
         print('buy  : ' + date + ' / ' + time)
-        self.trans_count = self.trans_count + 1
+        self.stat.inc_trans()
         if order_type == 'M':
             slip = instrument.slip
         else:
@@ -104,7 +104,7 @@ class Trade:
 
     def sell(self, instrument: Instrument, price: float, count: int, order_type, date, time):
         print('sell : ' + date + ' / ' + time)
-        self.trans_count = self.trans_count + 1
+        self.stat.inc_trans()
         if order_type == 'M':
             slip = instrument.slip
         else:

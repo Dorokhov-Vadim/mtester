@@ -7,12 +7,17 @@ from .providers import Instrument
 
 class TradeStat:
     def __init__(self):
+        self.balance_hist = []
+        self.trans_count = 0
         self.all_candles: Dict[Instrument, List] = dict()
         self.buys: Dict[Instrument, Dict] = dict()
         self.sells: Dict[Instrument, Dict] = dict()
         self.user_indicators: Dict[Instrument, Dict[str, Dict]] = dict()
 
-    def add_candle(self, instrument: Instrument, date, time, open, low, high, close, balance, lose):
+    def inc_trans(self):
+        self.trans_count = self.trans_count + 1
+
+    def add_candle(self, instrument: Instrument, date, time, open, low, high, close, lose, profit):
         data = dict()
         data['date'] = date
         data['time'] = time
@@ -20,8 +25,8 @@ class TradeStat:
         data['low'] = low
         data['high'] = high
         data['close'] = close
-        data['balance'] = balance
         data['lose'] = lose
+        data['profit'] = profit
         if self.all_candles.get(instrument) is None:
             self.all_candles[instrument] = []
         self.all_candles[instrument].append(data)
@@ -42,21 +47,15 @@ class TradeStat:
             self.sells[instrument] = dict()
         self.sells[instrument][date + time] = data
 
-    def show_trade_stat(self, instrument):
-        balance = []
+    def show_trade_stat(self):
         loses = []
-        index = 0
-        timestamps = []
-
-        for candle in self.all_candles[instrument]:
-            index = index + 1
-            timestamps.append(index)
-            balance.append(candle['balance'])
-            loses.append(candle['lose'])
-            # timestamp = candle['date'] + candle['time']
-
-        print('Max lose = ' + str(max(*loses)))
-        plt.plot(timestamps, balance, 'r--')
+        print('Trans count = '+str(self.trans_count))
+        for instrument in self.all_candles:
+            for candle in self.all_candles[instrument]:
+                loses.append(candle['lose'])
+            print('Max lose of '+instrument.ticker+' = ' + str(max(*loses)))
+        print('Balance = '+str(self.balance_hist[-1]))
+        plt.plot([num for num in range(0, len(self.balance_hist))], self.balance_hist, 'r-')
         plt.show()
 
     def show_instrument(self, instrument):
@@ -86,14 +85,18 @@ class TradeStat:
             if not (self.user_indicators.get(instrument) is None):
                 for indicator in self.user_indicators[instrument]:
                     if indicators.get(indicator) is None:
-                        indicators[indicator] = []
+                        indicators[indicator] = dict()
+                        indicators[indicator]['style'] = ''
+                        indicators[indicator]['candles'] = []
+
                     if self.user_indicators[instrument][indicator].get(timestamp) is None:
-                        indicators[indicator].append(None)
+                        indicators[indicator]['candles'].append(None)
                     else:
-                        indicators[indicator].append(self.user_indicators[instrument][indicator][timestamp])
+                        indicators[indicator]['candles'].append(self.user_indicators[instrument][indicator][timestamp])
+                    indicators[indicator]['style'] = self.user_indicators[instrument][indicator]['style']
         for indicator in indicators:
-            plt.plot(timestamps, indicators[indicator], 'g--', )
-        plt.plot(timestamps, all, 'b--',)
+            plt.plot(timestamps, indicators[indicator]['candles'], indicators[indicator]['style'])
+        plt.plot(timestamps, all, 'b-',)
         plt.plot(timestamps, buys, 'g^', timestamps, sells, 'rv')
 
         plt.show()
