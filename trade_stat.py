@@ -48,12 +48,18 @@ class TradeStat:
         self.sells[instrument][date + time] = data
 
     def show_trade_stat(self):
-        loses = []
+        all_loses = []
         print('Trans count = '+str(self.trans_count))
         for instrument in self.all_candles:
+            loses = []
             for candle in self.all_candles[instrument]:
                 loses.append(candle['lose'])
+            all_loses.append(loses)
+            print(loses)
             print('Max lose of '+instrument.ticker+' = ' + str(max(*loses)))
+        sum_loses = [sum(loses) for loses in zip(*all_loses)]
+        print(sum_loses)
+        print('Max sum of loses = '+str(max(*sum_loses)))
         print('Balance = '+str(self.balance_hist[-1]))
         plt.plot([num for num in range(0, len(self.balance_hist))], self.balance_hist, 'r-')
         plt.show()

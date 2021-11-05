@@ -61,14 +61,15 @@ class CandleTest(BaseTest):
                 for candle in closed_candles:
                     for position in self.strategy.trade.positions:
                         if position.instrument is candle.instrument:
+                            coef = position.instrument.step_price/position.instrument.step
                             if position.mean_price > candle.low and position.count > 0:
-                                lose = (position.mean_price - candle.low) * position.count
+                                lose = (position.mean_price - candle.low) * position.count * coef
                             if position.mean_price < candle.high and position.count < 0:
-                                lose = (candle.high - position.mean_price) * abs(position.count)
+                                lose = (candle.high - position.mean_price) * abs(position.count) * coef
                             if position.mean_price < candle.high and position.count > 0:
-                                profit = (candle.high - position.mean_price) * position.count
+                                profit = (candle.high - position.mean_price) * position.count * coef
                             if position.mean_price > candle.low and position.count < 0:
-                                profit = (position.mean_price - candle.low) * abs(position.count)
+                                profit = (position.mean_price - candle.low) * abs(position.count) * coef
                     self.strategy.trade.stat.add_candle(candle.instrument, candle.date,
                                                         candle.time, candle.open, candle.low,
                                                         candle.high, candle.close,
