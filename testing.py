@@ -56,9 +56,10 @@ class CandleTest(BaseTest):
                                 prev_close = candle.close
                 self.strategy.trade.stat.balance_hist.append(self.strategy.trade.balance)
                 # stat collection
-                lose = 0
-                profit = 0
+
                 for candle in closed_candles:
+                    lose = 0
+                    profit = 0
                     for position in self.strategy.trade.positions:
                         if position.instrument is candle.instrument:
                             coef = position.instrument.step_price/position.instrument.step

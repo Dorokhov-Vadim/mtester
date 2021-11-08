@@ -54,11 +54,20 @@ class TradeStat:
             loses = []
             for candle in self.all_candles[instrument]:
                 loses.append(candle['lose'])
+                # loses.append([candle['lose'], candle['date']+' / '+candle['time']])
             all_loses.append(loses)
-            print(loses)
-            print('Max lose of '+instrument.ticker+' = ' + str(max(*loses)))
+            # print(loses)
+            # max_lose = loses[0][0]
+            # date_max_lose = ''
+            # for lose in loses:
+            #     if lose[0] > max_lose:
+            #         max_lose = lose[0]
+            #         date_max_lose = lose[1]
+            # print('Max lose of '+instrument.ticker+' = ' + str(max_lose) + ' : '+date_max_lose)
+
+            print('Max lose of ' + instrument.ticker + ' = ' + str(max(*loses)))
         sum_loses = [sum(loses) for loses in zip(*all_loses)]
-        print(sum_loses)
+        # print(sum_loses)
         print('Max sum of loses = '+str(max(*sum_loses)))
         print('Balance = '+str(self.balance_hist[-1]))
         plt.plot([num for num in range(0, len(self.balance_hist))], self.balance_hist, 'r-')
@@ -78,12 +87,12 @@ class TradeStat:
             timestamps.append(index)
             timestamp = candle['date'] + candle['time']
 
-            if self.buys.get(instrument).get(timestamp) is None:
+            if self.buys.get(instrument) is None or self.buys.get(instrument).get(timestamp) is None:
                 buys.append(None)
             else:
                 buys.append(self.buys[instrument][timestamp]['price'])
 
-            if self.sells.get(instrument).get(timestamp) is None:
+            if self.sells.get(instrument) is None or self.sells.get(instrument).get(timestamp) is None:
                 sells.append(None)
             else:
                 sells.append(self.sells[instrument][timestamp]['price'])
