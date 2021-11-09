@@ -14,7 +14,7 @@ from mtester.strategies.ma_slow_fast import MASlowFast
 
 i = {'rts': Instrument('rts', 10, 14.2, 10), 'si': Instrument('si', 1, 1, 1)}
 provider = FinamSyncProvider(['mtester/data/1m/rts.txt', 'mtester/data/1m/si.txt'], [i['rts'], i['si']])
-strategy = MASlowFast(100)
+strategy = MASlowFast(window_size=100)
 test = CandleTest(strategy, provider)
 test.run()
 test.show_trade_stat()
