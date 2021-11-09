@@ -1,4 +1,4 @@
-# <h1>mtester
+# <h1>mtester @octocat :+1:
 > <h4>Python package for testing stock market automation strategies on historical data</h4>
 
 
@@ -9,7 +9,7 @@
 from mtester.testing import CandleTest
 from mtester.instruments import Instrument
 from mtester.providers import FinamSyncProvider
-from mtester.strategies.MA_slow_fast import MASlowFast
+from mtester.strategies.ma_slow_fast import MASlowFast
  
 
 i = {'rts': Instrument('rts', 10, 14.2, 10), 'si': Instrument('si', 1, 1, 1)}
