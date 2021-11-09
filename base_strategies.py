@@ -30,16 +30,18 @@ class BaseCandleStrategy:
         self.trade.stat.add_sell(instrument, self.cur_date, self.cur_time, price, count)
 
     def receive_data(self, candles: List[Candle], current_dict):
-
+        candles_len = 0
         for candle in candles:
             if self.trade.pos_by_instrument(candle.instrument) is None:
                 self.trade.positions.append(Position(candle.instrument))
             if self.candles_dict.get(candle.instrument) is None:
                 self.candles_dict[candle.instrument] = []
-            if len(self.candles_dict[candle.instrument]) >= self.window_size:
+            candles_len = len(self.candles_dict[candle.instrument])
+            if candles_len >= self.window_size:
                 self.candles_dict[candle.instrument].pop(0)
             self.candles_dict[candle.instrument].append(candle)
-        self.on_candle_close(self.candles_dict, current_dict)
+        if candles_len == self.window_size:
+            self.on_candle_close(self.candles_dict, current_dict)
 
     # Main callback for user's strategies
     def on_candle_close(self, closed_candles: Dict[Instrument, List[Candle]], current_candle: Dict[Instrument, CurCandle]):
