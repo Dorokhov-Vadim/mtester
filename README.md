@@ -1,4 +1,4 @@
-# <h1>mtester @octocat :+1:
+# <h1>mtester :chart_with_upwards_trend:
 > <h4>Python package for testing stock market automation strategies on historical data</h4>
 
 
