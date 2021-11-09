@@ -1,11 +1,11 @@
-# mtester
-Python package for testing stock market automation strategies on historical data
+# <h1>mtester
+> <h4>Python package for testing stock market automation strategies on historical data</h4>
 
 
-#########     Proof of concept:    ###########
+####  for example:    
 
-#########  Import data structures  ###########
 
+```
 from mtester.testing import CandleTest
 
 from mtester.instruments import Instrument
@@ -14,9 +14,7 @@ from mtester.providers import FinamSyncProvider
 
 from mtester.strategies.MA_slow_fast import MASlowFast
 
-
-
-#########  Create test  ########## 
+ 
 
 i = {'rts': Instrument('rts', 10, 14.2, 10), 'si': Instrument('si', 1, 1, 1)}
 
@@ -33,3 +31,4 @@ test.show_trade_stat()
 test.show_instrument(i['rts'])
 
 test.show_instrument(i['si'])
+```
