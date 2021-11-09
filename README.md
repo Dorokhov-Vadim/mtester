@@ -20,7 +20,7 @@ from mtester.strategies.MA_slow_fast import MASlowFast
 
 i = {'rts': Instrument('rts', 10, 14.2, 10), 'si': Instrument('si', 1, 1, 1)}
 
-provider = FinamSyncProvider(['data/1m/temp_rts.txt', 'data/1m/temp_si.txt'], [i['rts'], i['si']])
+provider = FinamSyncProvider(['mtester/data/1m/rts.txt', 'mtester/data/1m/si.txt'], [i['rts'], i['si']])
 
 strategy = MASlowFast(100)
 
