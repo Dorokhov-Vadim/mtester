@@ -77,6 +77,7 @@ class FinamSyncProvider(BaseSyncProvider):
         self.intersect_stamps: Set = set()
         self.file_names = file_names
         self.instruments = instruments
+        print('load historical data...')
         for file_name in self.file_names:
             timestamps = set()
             provider = FinamCandlesProvider(file_name, None)
@@ -84,6 +85,7 @@ class FinamSyncProvider(BaseSyncProvider):
                 timestamps.add(candle.date + candle.time)
             self.timestamps.append(timestamps)
         self.intersect_stamps = self.timestamps[0]
+        print('sync data...')
         for el in self.timestamps:
             self.intersect_stamps = self.intersect_stamps.intersection(el)
         self.opened_files: List[FinamCandlesProvider] = []
