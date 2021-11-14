@@ -9,7 +9,8 @@ class BaseTest:
 
 
 class CandleTest(BaseTest):
-    def __init__(self, strategy: BaseCandleStrategy, data_provider: Iterable, from_num_candle=0, to_num_candle=0, show_balance_changing=False):
+    def __init__(self, strategy: BaseCandleStrategy, data_provider: Iterable, from_num_candle=0, to_num_candle=0,
+                 show_balance_changing=False):
         self.strategy: BaseCandleStrategy = strategy
         self.data_provider = data_provider
         self.from_num_candle = from_num_candle
@@ -53,27 +54,35 @@ class CandleTest(BaseTest):
                     data_batch = [data_batch]
                 if len(closed_candles) > 0:
                     for position in self.strategy.trade.positions:
-                        for def_order in position.deferred_orders:
-                            for candle in closed_candles:
+                        for candle in closed_candles:
+                            if prev_close is None:
+                                prev_close = dict()
+                            prev_close[candle.instrument] = candle.close
+                            for def_order in position.deferred_orders:
                                 if candle.instrument is position.instrument:
-                                    if prev_close is None:
-                                        prev_close = candle.close
-                                    if (prev_close > candle.high and candle.low < def_order.price < prev_close)\
-                                    or (prev_close < candle.low and prev_close < def_order.price < candle.high)\
-                                    or (candle.low <= prev_close <= candle.high
-                                        and candle.low < def_order.price < candle.high):
+                                    if (prev_close[candle.instrument] > candle.high and candle.low < def_order.price <
+                                        prev_close[candle.instrument]) \
+                                            or (prev_close[candle.instrument] < candle.low and prev_close[
+                                        candle.instrument] < def_order.price < candle.high) \
+                                            or (candle.low <= prev_close[candle.instrument] <= candle.high
+                                                and candle.low < def_order.price < candle.high):
                                         if def_order.oper == 'B':
-                                            self.strategy.trade.buy(position.instrument, def_order.price, def_order.count,
+                                            self.strategy.trade.buy(position.instrument, def_order.price,
+                                                                    def_order.count,
                                                                     def_order.order_type, candle.date, candle.time)
                                             self.strategy.trade.stat.add_buy(position.instrument, candle.date,
-                                                                             candle.time, def_order.price, def_order.count)
+                                                                             candle.time, def_order.price,
+                                                                             def_order.count)
+
                                         if def_order.oper == 'S':
-                                            self.strategy.trade.sell(position.instrument, def_order.price, def_order.count,
+                                            self.strategy.trade.sell(position.instrument, def_order.price,
+                                                                     def_order.count,
                                                                      def_order.order_type, candle.date, candle.time)
                                             self.strategy.trade.stat.add_sell(position.instrument, candle.date,
-                                                                              candle.time, def_order.price, def_order.count)
+                                                                              candle.time, def_order.price,
+                                                                              def_order.count)
                                         position.deferred_orders.remove(def_order)
-                                    prev_close = candle.close
+                            prev_close[candle.instrument] = candle.close
                     self.strategy.trade.stat.balance_hist.append(self.strategy.trade.balance)
                     # stat collection
 
@@ -82,7 +91,7 @@ class CandleTest(BaseTest):
                         profit = 0
                         for position in self.strategy.trade.positions:
                             if position.instrument is candle.instrument:
-                                coef = position.instrument.step_price/position.instrument.step
+                                coef = position.instrument.step_price / position.instrument.step
                                 if position.mean_price > candle.low and position.count > 0:
                                     lose = (position.mean_price - candle.low) * position.count * coef
                                 if position.mean_price < candle.high and position.count < 0:
