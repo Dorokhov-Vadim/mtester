@@ -26,7 +26,7 @@ class StochasticOscillator(BaseCandleIndicator):
             i = i + 1
             if i >= self.k_len:
                 cur_price = candle.close
-                k_vals.append((cur_price - min(lows[-self.k_len:])) / (max(highs[-self.k_len:]) - min(lows[-self.k_len:])))
+                k_vals.append((cur_price - min(lows[i-self.k_len:i])) / (max(highs[i-self.k_len:i]) - min(lows[i-self.k_len:i])))
         for i in range(1, len(k_vals)+1):
             if i >= self.k_smoth:
                 k_smothed.append(sum(k_vals[i-self.k_smoth:i]) / self.k_smoth)
