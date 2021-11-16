@@ -57,16 +57,25 @@ class CandleTest(BaseTest):
                         for candle in closed_candles:
                             if prev_close is None:
                                 prev_close = dict()
-                            prev_close[candle.instrument] = candle.close
+                            # prev_close[candle.instrument] = candle.close
                             for def_order in position.deferred_orders:
+                                # print('PREV CLOSE = ' + str(prev_close[candle.instrument]))
+                                # print(candle.low)
+                                # print(def_order.price)
+                                # print(candle.high)
+                                # print(candle.open)
+                                # print('---------------')
+
                                 if candle.instrument is position.instrument:
                                     if (prev_close[candle.instrument] > candle.high and candle.low < def_order.price <
                                         prev_close[candle.instrument]) \
-                                            or (prev_close[candle.instrument] < candle.low and prev_close[
-                                        candle.instrument] < def_order.price < candle.high) \
+                                            or ((prev_close[candle.instrument] <= candle.low) and (prev_close[
+                                        candle.instrument] <= def_order.price <= candle.high)) \
                                             or (candle.low <= prev_close[candle.instrument] <= candle.high
                                                 and candle.low < def_order.price < candle.high):
                                         if def_order.oper == 'B':
+
+
                                             self.strategy.trade.buy(position.instrument, def_order.price,
                                                                     def_order.count,
                                                                     def_order.order_type, candle.date, candle.time)

@@ -103,27 +103,40 @@ class TradeStat:
                         indicators[indicator] = dict()
                         indicators[indicator]['style'] = ''
                         indicators[indicator]['candles'] = []
-
+                        indicators[indicator]['subplot'] = False
                     if self.user_indicators[instrument][indicator].get(timestamp) is None:
                         indicators[indicator]['candles'].append(None)
                     else:
                         indicators[indicator]['candles'].append(self.user_indicators[instrument][indicator][timestamp])
                     indicators[indicator]['style'] = self.user_indicators[instrument][indicator]['style']
+                    indicators[indicator]['subplot'] = self.user_indicators[instrument][indicator]['subplot']
+        add_sub_plot = False
         for indicator in indicators:
-            plt.plot(timestamps, indicators[indicator]['candles'], indicators[indicator]['style'])
-        plt.plot(timestamps, all, 'b-',)
-        plt.plot(timestamps, buys, 'g^', timestamps, sells, 'rv')
+            if indicators[indicator]['subplot']:
+                add_sub_plot = True
 
+        if add_sub_plot:
+            print('sub')
+            figure, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
+            for indicator in indicators:
+                if indicators[indicator]['subplot']:
+                    ax2.plot(timestamps, indicators[indicator]['candles'])
+                else:
+                    ax1.plot(timestamps, indicators[indicator]['candles'])
+            ax1.plot(timestamps, all, 'b-', )
+            ax1.plot(timestamps, buys, 'g^', timestamps, sells, 'rv')
+        else:
+            for indicator in indicators:
+                plt.plot(timestamps, indicators[indicator]['candles'], indicators[indicator]['style'])
+                plt.plot(timestamps, all, 'b-', )
+                plt.plot(timestamps, buys, 'g^', timestamps, sells, 'rv')
         plt.show()
 
-    def add_indicator(self, instrument, ind_name, date, time, value, chart_style='-'):
+    def add_indicator(self, instrument, ind_name, date, time, value, chart_style='-', subplot=False):
         if self.user_indicators.get(instrument) is None:
             self.user_indicators[instrument] = dict()
         if self.user_indicators[instrument].get(ind_name) is None:
             self.user_indicators[instrument][ind_name] = dict()
         self.user_indicators[instrument][ind_name][date + time] = value
         self.user_indicators[instrument][ind_name]['style'] = chart_style
-
-
-
-
+        self.user_indicators[instrument][ind_name]['subplot'] = subplot
