@@ -54,17 +54,7 @@ class TradeStat:
             loses = []
             for candle in self.all_candles[instrument]:
                 loses.append(candle['lose'])
-                # loses.append([candle['lose'], candle['date']+' / '+candle['time']])
             all_loses.append(loses)
-            # print(loses)
-            # max_lose = loses[0][0]
-            # date_max_lose = ''
-            # for lose in loses:
-            #     if lose[0] > max_lose:
-            #         max_lose = lose[0]
-            #         date_max_lose = lose[1]
-            # print('Max lose of '+instrument.ticker+' = ' + str(max_lose) + ' : '+date_max_lose)
-
             print('Max lose of ' + instrument.ticker + ' = ' + str(max(*loses)))
         sum_loses = [sum(loses) for loses in zip(*all_loses)]
         # print(sum_loses)
@@ -116,13 +106,13 @@ class TradeStat:
                 add_sub_plot = True
 
         if add_sub_plot:
-            print('sub')
             figure, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
             for indicator in indicators:
                 if indicators[indicator]['subplot']:
-                    ax2.plot(timestamps, indicators[indicator]['candles'])
+                    ax2.plot(timestamps, indicators[indicator]['candles'], indicators[indicator]['style'])
                 else:
-                    ax1.plot(timestamps, indicators[indicator]['candles'])
+                    ax1.plot(timestamps, indicators[indicator]['candles'], indicators[indicator]['style'])
+
             ax1.plot(timestamps, all, 'b-', )
             ax1.plot(timestamps, buys, 'g^', timestamps, sells, 'rv')
         else:
