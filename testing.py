@@ -45,8 +45,6 @@ class CandleTest(BaseTest):
         print('Market testing is running...')
         closed_candles = []
         prev_close = None
-        prev_balance = 0
-
         for data_batch in self.data_provider:
             candle_count = candle_count + 1
             if self.is_allow_interval(candle_count):
@@ -57,15 +55,7 @@ class CandleTest(BaseTest):
                         for candle in closed_candles:
                             if prev_close is None:
                                 prev_close = dict()
-                            # prev_close[candle.instrument] = candle.close
                             for def_order in position.deferred_orders:
-                                # print('PREV CLOSE = ' + str(prev_close[candle.instrument]))
-                                # print(candle.low)
-                                # print(def_order.price)
-                                # print(candle.high)
-                                # print(candle.open)
-                                # print('---------------')
-
                                 if candle.instrument is position.instrument:
                                     if (prev_close[candle.instrument] > candle.high and candle.low < def_order.price <
                                         prev_close[candle.instrument]) \
@@ -83,6 +73,7 @@ class CandleTest(BaseTest):
                                                                              candle.time, def_order.price,
                                                                              def_order.count)
 
+
                                         if def_order.oper == 'S':
                                             self.strategy.trade.sell(position.instrument, def_order.price,
                                                                      def_order.count,
@@ -90,6 +81,7 @@ class CandleTest(BaseTest):
                                             self.strategy.trade.stat.add_sell(position.instrument, candle.date,
                                                                               candle.time, def_order.price,
                                                                               def_order.count)
+
                                         position.deferred_orders.remove(def_order)
                             prev_close[candle.instrument] = candle.close
                     self.strategy.trade.stat.balance_hist.append(self.strategy.trade.balance)
@@ -126,8 +118,4 @@ class CandleTest(BaseTest):
                     self.strategy.cur_time = data_batch[0].time
                     self.strategy.receive_data(closed_candles, cur_data_batch)
                 closed_candles = data_batch
-
-                if prev_balance != self.strategy.trade.balance:
-                    print('Balance = ' + str(self.strategy.trade.balance))
-                    prev_balance = self.strategy.trade.balance
         print('Market testing is done.')

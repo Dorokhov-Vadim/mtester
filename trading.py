@@ -68,6 +68,7 @@ class Trade:
 
     def buy(self, instrument: Instrument, price: float, count: int, order_type, date, time):
         print('buy  : '+instrument.ticker+' '+ date + ' / ' + time + ' / price = '+str(price) + ' / count = '+str(count))
+
         self.stat.inc_trans()
         if order_type == 'M':
             slip = instrument.slip
@@ -101,9 +102,11 @@ class Trade:
                 # self.stat.balance_history.append(self.balance)
                 pos.count = count - abs(pos.count)
                 pos.mean_price = price + slip
+        print('Balance = ' + str(self.balance))
 
     def sell(self, instrument: Instrument, price: float, count: int, order_type, date, time):
         print('sell : '+instrument.ticker+' ' + date + ' / ' + time + ' / price = '+str(price) + ' / count = '+str(count))
+
         self.stat.inc_trans()
         if order_type == 'M':
             slip = instrument.slip
@@ -137,3 +140,4 @@ class Trade:
                 # self.stat.balance_history.append(self.balance)
                 pos.count = abs(pos.count) - count
                 pos.mean_price = price - slip
+        print('Balance = ' + str(self.balance))

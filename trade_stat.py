@@ -100,10 +100,12 @@ class TradeStat:
                         indicators[indicator]['candles'].append(self.user_indicators[instrument][indicator][timestamp])
                     indicators[indicator]['style'] = self.user_indicators[instrument][indicator]['style']
                     indicators[indicator]['subplot'] = self.user_indicators[instrument][indicator]['subplot']
+
         add_sub_plot = False
         for indicator in indicators:
             if indicators[indicator]['subplot']:
                 add_sub_plot = True
+
 
         if add_sub_plot:
             figure, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
