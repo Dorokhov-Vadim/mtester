@@ -2,7 +2,7 @@ from typing import List, Dict
 from .trading import Trade, Position
 from .providers import Candle, CurCandle
 from .instruments import Instrument
-
+import warnings
 
 class BaseCandleStrategy:
     def __init__(self, window_size: int):
@@ -41,7 +41,9 @@ class BaseCandleStrategy:
                 self.candles_dict[candle.instrument].pop(0)
             self.candles_dict[candle.instrument].append(candle)
         if candles_len == self.window_size:
-            self.on_candle_close(self.candles_dict, current_dict)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                self.on_candle_close(self.candles_dict, current_dict)
 
     # Main callback for user's strategies
     def on_candle_close(self, closed_candles: Dict[Instrument, List[Candle]], current_candle: Dict[Instrument, CurCandle]):
