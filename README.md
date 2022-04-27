@@ -1,6 +1,6 @@
 # <h1>mtester :chart_with_upwards_trend:
 > <h4>Python package for testing stock market automation strategies on historical data</h4>
-> <h4>Synchronized data feed from different tools is supported for testing arbitrage trading algorithms</h4>
+> <h4>Synchronized data feed from different sources is supported for testing arbitrage trading algorithms</h4>
 
 ####  Example of testing strategy:  
 
