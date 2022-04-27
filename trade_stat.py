@@ -120,8 +120,8 @@ class TradeStat:
         else:
             for indicator in indicators:
                 plt.plot(timestamps, indicators[indicator]['candles'], indicators[indicator]['style'])
-                plt.plot(timestamps, all, 'b-', )
-                plt.plot(timestamps, buys, 'g^', timestamps, sells, 'rv')
+            plt.plot(timestamps, all, 'b-', )
+            plt.plot(timestamps, buys, 'g^', timestamps, sells, 'rv')
         plt.show()
 
     def add_indicator(self, instrument, ind_name, date, time, value, chart_style='-', subplot=False):
