@@ -60,19 +60,16 @@ class CandleTest(BaseTest):
                                     if (prev_close[candle.instrument] > candle.high and candle.low < def_order.price <
                                         prev_close[candle.instrument]) \
                                             or ((prev_close[candle.instrument] <= candle.low) and (prev_close[
-                                        candle.instrument] <= def_order.price <= candle.high)) \
+                                                                                                       candle.instrument] <= def_order.price <= candle.high)) \
                                             or (candle.low <= prev_close[candle.instrument] <= candle.high
                                                 and candle.low < def_order.price < candle.high):
                                         if def_order.oper == 'B':
-
-
                                             self.strategy.trade.buy(position.instrument, def_order.price,
                                                                     def_order.count,
                                                                     def_order.order_type, candle.date, candle.time)
                                             self.strategy.trade.stat.add_buy(position.instrument, candle.date,
                                                                              candle.time, def_order.price,
                                                                              def_order.count)
-
 
                                         if def_order.oper == 'S':
                                             self.strategy.trade.sell(position.instrument, def_order.price,
