@@ -60,7 +60,8 @@ class TradeStat:
         # print(sum_loses)
         print('Permanent complex lose = '+str(max(*sum_loses)))
         print('Balance = '+str(self.balance_hist[-1]))
-        plt.plot([num for num in range(0, len(self.balance_hist))], self.balance_hist, 'r-')
+        _, (ax1) = plt.subplots(1, 1, sharex=True, num="Balance dynamic")
+        ax1.plot([num for num in range(0, len(self.balance_hist))], self.balance_hist, 'r-')
         plt.show()
 
     def show_instrument(self, instrument):
@@ -106,9 +107,9 @@ class TradeStat:
             if indicators[indicator]['subplot']:
                 add_sub_plot = True
 
-
         if add_sub_plot:
-            figure, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
+            _, (ax1, ax2) = plt.subplots(2, 1, sharex=True, num=instrument.ticker + " instrument dynamic")
+
             for indicator in indicators:
                 if indicators[indicator]['subplot']:
                     ax2.plot(timestamps, indicators[indicator]['candles'], indicators[indicator]['style'])
@@ -118,10 +119,12 @@ class TradeStat:
             ax1.plot(timestamps, all, 'b-', )
             ax1.plot(timestamps, buys, 'g^', timestamps, sells, 'rv')
         else:
+            _, (ax1) = plt.subplots(1, 1, sharex=True, num=instrument.ticker + " instrument dynamic")
             for indicator in indicators:
-                plt.plot(timestamps, indicators[indicator]['candles'], indicators[indicator]['style'])
-            plt.plot(timestamps, all, 'b-', )
-            plt.plot(timestamps, buys, 'g^', timestamps, sells, 'rv')
+                ax1.plot(timestamps, indicators[indicator]['candles'], indicators[indicator]['style'])
+            ax1.plot(timestamps, all, 'b-')
+            ax1.plot(timestamps, buys, 'g^', timestamps, sells, 'rv')
+
         plt.show()
 
     def add_indicator(self, instrument, ind_name, date, time, value, chart_style='-', subplot=False):
