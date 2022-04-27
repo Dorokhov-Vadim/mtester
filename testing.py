@@ -17,9 +17,9 @@ class CandleTest(BaseTest):
         self.to_num_candle = to_num_candle
         self.show_balance_changing = show_balance_changing
 
-    def set_interval(self, from_num_candle=0, to_num_candle=0):
-        self.from_num_candle = from_num_candle
-        self.to_num_candle = to_num_candle
+    def set_from_to_candles(self, *, from_candle=0, to_candle=0):
+        self.from_num_candle = from_candle
+        self.to_num_candle = to_candle
 
     def show_trade_stat(self):
         self.strategy.trade.stat.show_trade_stat()

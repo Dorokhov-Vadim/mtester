@@ -16,7 +16,7 @@ i = {'rts': Instrument('rts', 10, 14.2, 10), 'si': Instrument('si', 1, 1, 1)}
 provider = FinamSyncProvider(['Path/to/data_file_rts.txt', 'Path/to/data_file_si.txt'], [i['rts'], i['si']])
 strategy = MASlowFast(window_size=400)
 test = CandleTest(strategy, provider)
-test.set_interval(0, 0)
+test.set_from_to_candles(from_candle=200000)
 test.run()
 test.show_trade_stat()
 test.show_instrument(i['rts'])
