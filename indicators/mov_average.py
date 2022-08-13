@@ -2,7 +2,7 @@ from .bases import BaseCandleIndicator
 from typing import List
 from ..providers import Candle
 
-
+# Simple Moving Avarage indicator
 class MovingAverage(BaseCandleIndicator):
     def __init__(self, data: List[Candle], size: int = 0):
         if len(data) < size:
