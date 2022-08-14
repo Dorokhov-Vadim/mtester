@@ -4,7 +4,7 @@ from typing import List, Dict
 from mtester.instruments import Instrument
 from mtester.providers import Candle, CurCandle
 
-ma_slow = 100
+ma_slow = 80
 ma_fast = 10
 
 
