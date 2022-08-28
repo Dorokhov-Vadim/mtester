@@ -8,7 +8,7 @@ class BaseCandleIndicator:
         raise Exception(self.__class__.__name__ +' must implement get_value() method')
 
 class IndicatorData:
-    def __init__(self, indicator: BaseCandleIndicator, panel=0, type='line', color='b', marker='o'):
+    def __init__(self, indicator: BaseCandleIndicator, panel=0, type='scatter', color='b', marker='o'):
         self.indicator = indicator
         # self.instrument = instrument
         self.panel = panel

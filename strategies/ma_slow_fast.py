@@ -11,7 +11,7 @@ ma_fast = 10
 
 class MASlowFast(BaseCandleStrategy):
     def on_strategy_create(self):
-        self.add_indicator(StochasticOscillator(14,3,3), self.pos_by_ticker('si').instrument, panel=1, type = 'scatter')
+        self.add_indicator(StochasticOscillator(14,3,3), self.pos_by_ticker('si').instrument, panel=1, color='r', type = 'scatter', marker='^')
 
     def on_candle_close(self, closed_candles: Dict[Instrument, List[Candle]],
                         current_candle: Dict[Instrument, CurCandle]):

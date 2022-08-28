@@ -58,10 +58,10 @@ class BaseCandleStrategy:
     def on_candle_close(self, closed_candles: Dict[Instrument, List[Candle]], current_candle: Dict[Instrument, CurCandle]):
         raise Exception(self.__class__.__name__ + ' class must implement on_candle_close method')
 
-    def add_indicator(self, indicator, instrument, panel=0, type='line', color='b', marker='o'):
+    def add_indicator(self, indicator, instrument, **kwargs):
         if self.trade.stat.indicators.get(instrument) is None:
             self.trade.stat.indicators[instrument] = list()
-        self.trade.stat.indicators[instrument].append(IndicatorData(indicator, panel=panel, type=type, color=color, marker=marker))
+        self.trade.stat.indicators[instrument].append(IndicatorData(indicator, **kwargs))
 
     def calc_indicators_for_candles(self, closed_candles: Dict[Instrument, List[Candle]]):
         for instrument in  self.trade.stat.indicators:

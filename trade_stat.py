@@ -111,7 +111,8 @@ class TradeStat:
             for _ in indicator_data.lines:
                 ind_sub_plots.append(mpf.make_addplot(pd.DataFrame(indicators[i]),
                                                       panel=indicator_data.panel,
-                                                      color=indicator_data.color))
+                                                      color=indicator_data.color,
+                                                      type=indicator_data.type))
                 i = i + 1
 
         df = pd.DataFrame(df_dict)
