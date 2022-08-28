@@ -57,21 +57,45 @@ class CandleTest(BaseTest):
                                                 candle.high, candle.close,
                                                 lose, profit)
 
+    def def_order_exec(self, position, candle, prev_close, def_order):
+        if ((prev_close[candle.instrument] > candle.high
+                      and candle.low < def_order.price < prev_close[candle.instrument])
+                     or ((prev_close[candle.instrument] <= candle.low)
+                         and (prev_close[candle.instrument] <= def_order.price <= candle.high))
+                     or (candle.low <= prev_close[candle.instrument] <= candle.high
+                         and candle.low < def_order.price < candle.high)):
+
+            if def_order.oper == 'B':
+                self.strategy.trade.buy(position.instrument, def_order.price,
+                                        def_order.count,
+                                        def_order.order_type, candle.date, candle.time)
+
+            if def_order.oper == 'S':
+                self.strategy.trade.sell(position.instrument, def_order.price,
+                                         def_order.count,
+                                         def_order.order_type, candle.date, candle.time)
+
+            position.deferred_orders.remove(def_order)
+
     def run(self):
         candle_count = 0
+        closed_candles = []
+        prev_close = None
+
         if self.strategy is None:
             raise Exception('strategy is None')
         if self.data_provider is None:
             raise Exception('historical data is empty')
         print('Market testing is running...')
-        closed_candles = []
-        prev_close = None
+
         for data_batch in self.data_provider:
+            # print(data_batch)
             candle_count = candle_count + 1
             if not self.is_allow_interval(candle_count):
                 continue
             if not isinstance(data_batch, list):
                 data_batch = [data_batch]
+
             if len(closed_candles) > 0:
                 for position in self.strategy.trade.positions:
                     for candle in closed_candles:
@@ -79,29 +103,7 @@ class CandleTest(BaseTest):
                             prev_close = dict()
                         for def_order in position.deferred_orders:
                             if candle.instrument is position.instrument:
-                                if (prev_close[candle.instrument] > candle.high and candle.low < def_order.price <
-                                    prev_close[candle.instrument]) \
-                                        or ((prev_close[candle.instrument] <= candle.low) and (prev_close[
-                                                                                                   candle.instrument] <= def_order.price <= candle.high)) \
-                                        or (candle.low <= prev_close[candle.instrument] <= candle.high
-                                            and candle.low < def_order.price < candle.high):
-                                    if def_order.oper == 'B':
-                                        self.strategy.trade.buy(position.instrument, def_order.price,
-                                                                def_order.count,
-                                                                def_order.order_type, candle.date, candle.time)
-                                        self.strategy.trade.stat.add_buy(position.instrument, candle.date,
-                                                                         candle.time, def_order.price,
-                                                                         def_order.count)
-
-                                    if def_order.oper == 'S':
-                                        self.strategy.trade.sell(position.instrument, def_order.price,
-                                                                 def_order.count,
-                                                                 def_order.order_type, candle.date, candle.time)
-                                        self.strategy.trade.stat.add_sell(position.instrument, candle.date,
-                                                                          candle.time, def_order.price,
-                                                                          def_order.count)
-
-                                    position.deferred_orders.remove(def_order)
+                                self.def_order_exec(position, candle, prev_close, def_order)
                         prev_close[candle.instrument] = candle.close
 
                 # stat collection

@@ -4,25 +4,24 @@ from ..providers import Candle
 
 
 class StochasticOscillator(BaseCandleIndicator):
-    def __init__(self, data: List[Candle], k_len, k_smoth, d_smoth):
-        if len(data) < k_len + k_smoth + d_smoth:
-            raise Exception("data size can't be less then k_len + k_smoth + d_smoth")
-        self.candles = data[-(k_len + k_smoth + d_smoth):]
-        self.size = len(self.candles)
+    def __init__(self, k_len, k_smoth, d_smoth):
         self.k_len = k_len
         self.k_smoth = k_smoth
         self.d_smoth = d_smoth
 
-    def get_value(self):
+    def get_value(self, candles: List[Candle]):
+        if len(candles) < self.k_len + self.k_smoth + self.d_smoth:
+            return None
+        candles = candles[-(self.k_len + self.k_smoth + self.d_smoth):]
         lows = []
         highs = []
         k_vals = []
         k_smothed = []
-        for candle in self.candles:
+        for candle in candles:
             lows.append(candle.low)
             highs.append(candle.high)
         i = 0
-        for candle in self.candles:
+        for candle in candles:
             i = i + 1
             if i >= self.k_len:
                 cur_price = candle.close

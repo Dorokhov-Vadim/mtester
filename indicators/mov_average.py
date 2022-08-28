@@ -4,19 +4,15 @@ from ..providers import Candle
 
 # Simple Moving Avarage indicator
 class MovingAverage(BaseCandleIndicator):
-    def __init__(self, data: List[Candle], size: int = 0):
-        if len(data) < size:
-            raise Exception("data size can't be less then size param")
-        if size <= 0:
-            self.candles = data
-            self.size = len(data)
-        else:
-            self.candles = data[-size:]
-            self.size = size
+    def __init__(self, size: int = 0):
+        self.size = size
 
-    def get_value(self):
+    def get_value(self, candles: List[Candle]):
+        if len(candles) < self.size:
+            return None
+        candles = candles[-self.size:]
         cn_sum = 0
-        for candle in self.candles:
+        for candle in candles:
             cn_sum = cn_sum + candle.close
         return cn_sum/self.size
 

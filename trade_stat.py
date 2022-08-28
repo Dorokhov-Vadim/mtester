@@ -3,7 +3,9 @@
 import matplotlib.pyplot as plt
 from typing import Dict, List
 from .providers import Instrument
-
+import pandas as pd
+import mplfinance as mpf
+from .indicators.bases import IndicatorData
 
 class TradeStat:
     def __init__(self):
@@ -12,7 +14,7 @@ class TradeStat:
         self.all_candles: Dict[Instrument, List] = dict()
         self.buys: Dict[Instrument, Dict] = dict()
         self.sells: Dict[Instrument, Dict] = dict()
-        self.user_indicators: Dict[Instrument, Dict[str, Dict]] = dict()
+        self.indicators: Dict[Instrument, List[IndicatorData]] = {}
 
     def inc_trans(self):
         self.trans_count = self.trans_count + 1
@@ -65,73 +67,64 @@ class TradeStat:
         plt.show()
 
     def show_instrument(self, instrument):
-        all = []
-        buys = []
-        sells = []
-        timestamps = []
-        indicators = dict()
-        index = 0
+        indicators = []
+        ind_sub_plots = []
+        df_dict = dict()
+        df_dict['Date'] = []
+        df_dict['Open'] = []
+        df_dict['Low'] = []
+        df_dict['High'] = []
+        df_dict['Close'] = []
+        df_dict['Buys'] = []
+        df_dict['Sells'] = []
+        for indicator_data in self.indicators[instrument]:
+            for _ in indicator_data.lines:
+                indicators.append([])
 
         for candle in self.all_candles[instrument]:
-            all.append(candle['close'])
-            index = index + 1
-            timestamps.append(index)
-            timestamp = candle['date'] + candle['time']
-
-            if self.buys.get(instrument) is None or self.buys.get(instrument).get(timestamp) is None:
-                buys.append(None)
+            df_dict['Date'].append(candle['date'] + candle['time'])
+            df_dict['Open'].append(candle['open'])
+            df_dict['Low'].append(candle['low'])
+            df_dict['High'].append(candle['high'])
+            df_dict['Close'].append(candle['close'])
+            if self.buys[instrument].get(candle['date'] + candle['time']) is None:
+                df_dict['Buys'].append(None)
             else:
-                buys.append(self.buys[instrument][timestamp]['price'])
+                df_dict['Buys'].append(self.buys[instrument][candle['date'] + candle['time']]['price'])
 
-            if self.sells.get(instrument) is None or self.sells.get(instrument).get(timestamp) is None:
-                sells.append(None)
+            if self.sells[instrument].get(candle['date'] + candle['time']) is None:
+                df_dict['Sells'].append(None)
             else:
-                sells.append(self.sells[instrument][timestamp]['price'])
+                df_dict['Sells'].append(self.sells[instrument][candle['date'] + candle['time']]['price'])
+            # user indicators to dataframes
+            i = 0
+            for indicator_data in self.indicators[instrument]:
+                for line in indicator_data.lines:
+                    indicators[i].append(line.get(candle['date'] + candle['time']))
+                    i = i + 1
 
-            if not (self.user_indicators.get(instrument) is None):
-                for indicator in self.user_indicators[instrument]:
-                    if indicators.get(indicator) is None:
-                        indicators[indicator] = dict()
-                        indicators[indicator]['style'] = ''
-                        indicators[indicator]['candles'] = []
-                        indicators[indicator]['subplot'] = False
-                    if self.user_indicators[instrument][indicator].get(timestamp) is None:
-                        indicators[indicator]['candles'].append(None)
-                    else:
-                        indicators[indicator]['candles'].append(self.user_indicators[instrument][indicator][timestamp])
-                    indicators[indicator]['style'] = self.user_indicators[instrument][indicator]['style']
-                    indicators[indicator]['subplot'] = self.user_indicators[instrument][indicator]['subplot']
+        # for ind in indicators:
+        #     ind_sub_plots.append(mpf.make_addplot(pd.DataFrame(ind), panel = 1))
 
-        add_sub_plot = False
-        for indicator in indicators:
-            if indicators[indicator]['subplot']:
-                add_sub_plot = True
+        i = 0
+        for indicator_data in self.indicators[instrument]:
+            for _ in indicator_data.lines:
+                ind_sub_plots.append(mpf.make_addplot(pd.DataFrame(indicators[i]),
+                                                      panel=indicator_data.panel,
+                                                      color=indicator_data.color))
+                i = i + 1
 
-        if add_sub_plot:
-            _, (ax1, ax2) = plt.subplots(2, 1, sharex=True, num=instrument.ticker + " instrument dynamic")
+        df = pd.DataFrame(df_dict)
+        df = df.set_index('Date')
+        df.index = pd.to_datetime(df.index)
 
-            for indicator in indicators:
-                if indicators[indicator]['subplot']:
-                    ax2.plot(timestamps, indicators[indicator]['candles'], indicators[indicator]['style'])
-                else:
-                    ax1.plot(timestamps, indicators[indicator]['candles'], indicators[indicator]['style'])
+        buys = mpf.make_addplot(pd.DataFrame(df_dict['Buys']), color='g', type='scatter', marker='^')
+        sells = mpf.make_addplot(pd.DataFrame(df_dict['Sells']), color='r', type='scatter', marker='v')
 
-            ax1.plot(timestamps, all, 'b-', )
-            ax1.plot(timestamps, buys, 'g^', timestamps, sells, 'rv')
-        else:
-            _, (ax1) = plt.subplots(1, 1, sharex=True, num=instrument.ticker + " instrument dynamic")
-            for indicator in indicators:
-                ax1.plot(timestamps, indicators[indicator]['candles'], indicators[indicator]['style'])
-            ax1.plot(timestamps, all, 'b-')
-            ax1.plot(timestamps, buys, 'g^', timestamps, sells, 'rv')
 
-        plt.show()
 
-    def add_indicator(self, instrument, ind_name, date, time, value, chart_style='-', subplot=False):
-        if self.user_indicators.get(instrument) is None:
-            self.user_indicators[instrument] = dict()
-        if self.user_indicators[instrument].get(ind_name) is None:
-            self.user_indicators[instrument][ind_name] = dict()
-        self.user_indicators[instrument][ind_name][date + time] = value
-        self.user_indicators[instrument][ind_name]['style'] = chart_style
-        self.user_indicators[instrument][ind_name]['subplot'] = subplot
+        mpf.plot(df, type='candle',
+                 title='\nInstrument: ' + instrument.ticker,
+                 addplot=[buys, sells] + ind_sub_plots ,
+                 warn_too_much_data=len(self.all_candles[instrument]))
+
