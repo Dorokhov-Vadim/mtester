@@ -21,6 +21,12 @@ class MASlowFast(BaseCandleStrategy):
                            "ma_slow",
                            color="b")
 
+        self.add_indicator(StochasticOscillator(14,3,3),
+                           self.pos_by_ticker('si').instrument,
+                           "osc",
+                           panel=1,
+                           color="r")
+
     def on_candle_close(self, closed_candles: Dict[Instrument, List[Candle]],
                         current_candle: Dict[Instrument, CurCandle]):
         si = self.pos_by_ticker('si').instrument

@@ -19,7 +19,10 @@ class IndicatorData:
 
     def calc_indicator_for_candles(self, instrument_candles: List[Candle]):
         i = 0
-        for line_value in self.indicator.get_value(instrument_candles),:
+        values = self.indicator.get_value(instrument_candles)
+        if not isinstance(values,tuple):
+           values = [values]
+        for line_value in values:
             if len(self.lines) < (i+1):
                 self.lines.append({})
             self.lines[i][instrument_candles[-1].date + instrument_candles[-1].time] = line_value
