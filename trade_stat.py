@@ -129,3 +129,12 @@ class TradeStat:
                  addplot=[buys, sells] + ind_sub_plots ,
                  warn_too_much_data=len(self.all_candles[instrument]))
 
+    def get_line(self, instrument: Instrument, name, line_num):
+        for ind in self.indicators[instrument]:
+            if ind.name == name:
+                return ind.lines[line_num]
+
+    def get_ind_by_candle(self,instrument: Instrument, name, line_num, candle):
+        for ind in self.indicators[instrument]:
+            if ind.name == name:
+                return ind.lines[line_num].get(candle.date+candle.time)
