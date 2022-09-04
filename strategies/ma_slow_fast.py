@@ -34,7 +34,8 @@ class MASlowFast(BaseCandleStrategy):
             return
 
 
-        self.sell_limit(si,1,closed_candles[si][-1].close + 100,1)
+        self.sell_limit(si,1,63000, 10)
+        print(len(self.trade.sells_limit[si]))
 
         if self.pos_by_ticker('si').count < 0 and cur_fast > cur_slow:
             self.buy_market(si, 1)

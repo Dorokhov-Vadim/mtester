@@ -35,11 +35,20 @@ class BaseCandleStrategy:
         self.sell(instrument, self.cur_candles[instrument].price, count, 'M')
 
     def buy_limit(self, instrument: Instrument, count: int, price: float, life_time: int):
+        if price > self.cur_candles[instrument].price:
+            self.buy_market(instrument, count)
+            return
         if self.trade.buys_limit.get(instrument) is None:
             self.trade.buys_limit[instrument] = []
         self.trade.buys_limit[instrument].append(LimitOrder(price, count, life_time))
 
     def sell_limit(self, instrument: Instrument, count: int, price: float, life_time: int):
+        print('-----' + str(price) + "   " + str(self.cur_candles[instrument].price) +'  '+ self.cur_time )
+        if price < self.cur_candles[instrument].price:
+            # print('-----' + str(price) + "   " + str(self.cur_candles[instrument].price))
+
+            self.sell_market(instrument, count)
+            return
         if self.trade.sells_limit.get(instrument) is None:
             self.trade.sells_limit[instrument] = []
         self.trade.sells_limit[instrument].append(LimitOrder(price, count, life_time))
@@ -92,36 +101,25 @@ class BaseCandleStrategy:
 
         for instrument in self.trade.buys_limit:
             candle_low = self.candles_dict[instrument][-1].low
-            candle_open = self.candles_dict[instrument][-1].open
             for order in self.trade.buys_limit[instrument]:
-                if candle_open < order.price:
-                    self.trade.buy(instrument, candle_open, order.count, "L",
-                                   self.candles_dict[instrument][-1].date,
-                                   self.candles_dict[instrument][-1].time)
+                if candle_low < order.price:
+                    self.trade.buy(instrument, order.price, order.count, "L",
+                                    self.candles_dict[instrument][-1].date,
+                                    self.candles_dict[instrument][-1].time)
                     order.deleted = True
-                else:
-                    if candle_low < order.price:
-                        self.trade.buy(instrument, order.price, order.count, "L",
-                                       self.candles_dict[instrument][-1].date,
-                                       self.candles_dict[instrument][-1].time)
-                        order.deleted = True
+                order.cur_life = order.cur_life + 1
             self.trade.buys_limit[instrument] = [order for order in self.trade.buys_limit[instrument]
-                                                 if not order.deleted]
+                                                 if not order.deleted and order.life_time >= order.cur_life]
 
         for instrument in self.trade.sells_limit:
             candle_high = self.candles_dict[instrument][-1].high
-            candle_open = self.candles_dict[instrument][-1].open
             for order in self.trade.sells_limit[instrument]:
-                if candle_open > order.price:
-                    self.trade.sell(instrument, candle_open, order.count, "L",
-                                   self.candles_dict[instrument][-1].date,
-                                   self.candles_dict[instrument][-1].time)
+
+                if candle_high > order.price:
+                    self.trade.sell(instrument, order.price, order.count, "L",
+                                    self.candles_dict[instrument][-1].date,
+                                    self.candles_dict[instrument][-1].time)
                     order.deleted = True
-                else:
-                    if candle_high > order.price:
-                        self.trade.sell(instrument, order.price, order.count, "L",
-                                       self.candles_dict[instrument][-1].date,
-                                       self.candles_dict[instrument][-1].time)
-                        order.deleted = True
+                order.cur_life = order.cur_life + 1
             self.trade.sells_limit[instrument] = [order for order in self.trade.sells_limit[instrument]
-                                                 if not order.deleted]
+                                                 if not order.deleted and order.life_time >= order.cur_life]
