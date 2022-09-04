@@ -1,20 +1,20 @@
 from typing import List, Dict
 from .trading import Trade, Position
-from .providers import Candle, CurCandle
+from .providers import Candle, CurCandle, LimitOrder
 from .instruments import Instrument
 from .indicators.bases import IndicatorData
 import warnings
 
+
 class BaseCandleStrategy:
     def __init__(self, window_size: int):
+        self.cur_candles: dict[Instrument, CurCandle]
         self.cur_date = ''
         self.cur_time = ''
         self.trade = Trade()
         self.window_size = window_size
-        self.candles_dict: Dict[Instrument, List] = {}
-        # self.indicators: Dict[Instrument, List[IndicatorData]] = {}
+        self.candles_dict: Dict[Instrument, List[Candle]] = {}
         self.is_created = False
-        # self.on_strategy_create()
 
     def pos_by_ticker(self, ticker: str) -> Position:
         return self.trade.pos_by_ticker(ticker)
@@ -22,16 +22,29 @@ class BaseCandleStrategy:
     def pos_by_instrument(self, instrument: Instrument) -> Position:
         return self.trade.pos_by_instrument(instrument)
 
-    def set_defer_order(self, instrument: Instrument, oper, order_type, price: float, count: int):
-        self.trade.set_defer_order(instrument, oper, order_type, price, count)
-
     def buy(self, instrument: Instrument, price: float, count: int, order_type):
         self.trade.buy(instrument, price, count, order_type, self.cur_date, self.cur_time)
 
     def sell(self, instrument: Instrument, price: float, count: int, order_type):
         self.trade.sell(instrument, price, count, order_type, self.cur_date, self.cur_time)
 
-    def receive_data(self, candles: List[Candle], current_dict):
+    def buy_market(self, instrument: Instrument, count: int):
+        self.buy(instrument, self.cur_candles[instrument].price, count, 'M')
+
+    def sell_market(self, instrument: Instrument, count: int):
+        self.sell(instrument, self.cur_candles[instrument].price, count, 'M')
+
+    def buy_limit(self, instrument: Instrument, count: int, price: float, life_time: int):
+        if self.trade.buys_limit.get(instrument) is None:
+            self.trade.buys_limit[instrument] = []
+        self.trade.buys_limit[instrument].append(LimitOrder(price, count, life_time))
+
+    def sell_limit(self, instrument: Instrument, count: int, price: float, life_time: int):
+        if self.trade.sells_limit.get(instrument) is None:
+            self.trade.sells_limit[instrument] = []
+        self.trade.sells_limit[instrument].append(LimitOrder(price, count, life_time))
+
+    def receive_data(self, candles: List[Candle]):
         candles_len = 0
         for candle in candles:
             if self.trade.pos_by_instrument(candle.instrument) is None:
@@ -48,14 +61,15 @@ class BaseCandleStrategy:
                 if not self.is_created:
                     self.on_strategy_create()
                     self.is_created = True
-                self.calc_indicators_for_candles(self.candles_dict)
-                self.on_candle_close(self.candles_dict, current_dict)
+                self.calc_indicators_for_candles()
+                self.limit_orders_exec()
+                self.on_candle_close(self.candles_dict)
 
     def on_strategy_create(self):
         raise Exception(self.__class__.__name__ + ' class must implement on_strategy_create method')
 
     # Main callback for user's strategies
-    def on_candle_close(self, closed_candles: Dict[Instrument, List[Candle]], current_candle: Dict[Instrument, CurCandle]):
+    def on_candle_close(self, closed_candles: Dict[Instrument, List[Candle]]):
         raise Exception(self.__class__.__name__ + ' class must implement on_candle_close method')
 
     def add_indicator(self, indicator, instrument, name, **kwargs):
@@ -63,13 +77,51 @@ class BaseCandleStrategy:
             self.trade.stat.indicators[instrument] = list()
         self.trade.stat.indicators[instrument].append(IndicatorData(indicator, name, **kwargs))
 
-    def calc_indicators_for_candles(self, closed_candles: Dict[Instrument, List[Candle]]):
-        for instrument in  self.trade.stat.indicators:
+    def calc_indicators_for_candles(self):
+        for instrument in self.trade.stat.indicators:
             for ind_data in self.trade.stat.indicators[instrument]:
-                ind_data.calc_indicator_for_candles(closed_candles[instrument])
+                ind_data.calc_indicator_for_candles(self.candles_dict[instrument])
 
     def get_line(self, instrument: Instrument, name, line_num=0):
         return self.trade.stat.get_line(instrument, name, line_num)
 
     def get_ind_by_candle(self, instrument: Instrument, name, line_num, candle):
         return self.trade.stat.get_ind_by_candle(instrument, name, line_num, candle)
+
+    def limit_orders_exec(self):
+
+        for instrument in self.trade.buys_limit:
+            candle_low = self.candles_dict[instrument][-1].low
+            candle_open = self.candles_dict[instrument][-1].open
+            for order in self.trade.buys_limit[instrument]:
+                if candle_open < order.price:
+                    self.trade.buy(instrument, candle_open, order.count, "L",
+                                   self.candles_dict[instrument][-1].date,
+                                   self.candles_dict[instrument][-1].time)
+                    order.deleted = True
+                else:
+                    if candle_low < order.price:
+                        self.trade.buy(instrument, order.price, order.count, "L",
+                                       self.candles_dict[instrument][-1].date,
+                                       self.candles_dict[instrument][-1].time)
+                        order.deleted = True
+            self.trade.buys_limit[instrument] = [order for order in self.trade.buys_limit[instrument]
+                                                 if not order.deleted]
+
+        for instrument in self.trade.sells_limit:
+            candle_high = self.candles_dict[instrument][-1].high
+            candle_open = self.candles_dict[instrument][-1].open
+            for order in self.trade.sells_limit[instrument]:
+                if candle_open > order.price:
+                    self.trade.sell(instrument, candle_open, order.count, "L",
+                                   self.candles_dict[instrument][-1].date,
+                                   self.candles_dict[instrument][-1].time)
+                    order.deleted = True
+                else:
+                    if candle_high > order.price:
+                        self.trade.sell(instrument, order.price, order.count, "L",
+                                       self.candles_dict[instrument][-1].date,
+                                       self.candles_dict[instrument][-1].time)
+                        order.deleted = True
+            self.trade.sells_limit[instrument] = [order for order in self.trade.sells_limit[instrument]
+                                                 if not order.deleted]

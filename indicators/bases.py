@@ -21,7 +21,7 @@ class IndicatorData:
         i = 0
         values = self.indicator.get_value(instrument_candles)
         if not isinstance(values,tuple):
-           values = [values]
+           values = values,
         for line_value in values:
             if len(self.lines) < (i+1):
                 self.lines.append({})

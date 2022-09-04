@@ -23,6 +23,15 @@ class CurCandle:
         self.price = 0
 
 
+class LimitOrder:
+    def __init__(self, price, count, life_time):
+        self.price: float = price
+        self.count: int = count
+        self.life_time: int = life_time
+        self.cur_life: int = 0
+        self.deleted = False
+
+
 class BaseCandlesProvider(Iterator):
 
     def __iter__(self):
@@ -107,14 +116,3 @@ class FinamSyncProvider(BaseSyncProvider):
         if len(candle_list) == 0:
             raise StopIteration()
         return candle_list
-
-
-
-
-
-
-
-
-
-
-

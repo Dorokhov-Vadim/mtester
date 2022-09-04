@@ -1,47 +1,14 @@
-from typing import List
+from typing import List, Dict
 from .instruments import Instrument
 from .trade_stat import TradeStat
-
-
-class DeferredOrder:
-    order_id = 0
-
-    def __init__(self, oper, order_type, price, count):
-        self.order_id = self.order_id + 1
-        if oper not in ('B', 'S'):
-            raise Exception('oper param must be str "B" or "S"')
-        # B-buy, S-sell
-        self.oper: str = oper
-        if order_type not in ('L', 'M'):
-            raise Exception('oper param must be str "L"(limit order) or "M"(market order)')
-        # L-limit, M-market (market order use instrument.slip)
-        self.order_type: str = order_type
-        self.price: float = price
-        self.count: int = count
+from .providers import LimitOrder
 
 
 class Position:
     def __init__(self, instrument: Instrument):
         self.instrument: Instrument = instrument
         self.count = 0
-        # margin = 0
         self.mean_price = 0
-        # price => count
-        self.deferred_orders: List[DeferredOrder] = []
-
-    def set_defer_order(self, oper, order_type, price, count) -> int:
-        self.deferred_orders.append(DeferredOrder(oper, order_type, price, count))
-        return self.deferred_orders[-1].order_id
-
-    def pop_defer_order(self, order_id) -> DeferredOrder:
-        if order_id == 0 and len(self.deferred_orders) > 0:
-            return self.deferred_orders.pop(0)
-        else:
-            for order in self.deferred_orders:
-                if order.order_id == order_id:
-                    self.deferred_orders.remove(order)
-                    return order
-
 
 class Trade:
     def __init__(self):
@@ -49,6 +16,8 @@ class Trade:
         self.positions: List[Position] = []
         self.trans_count = 0
         self.stat = TradeStat()
+        self.buys_limit: Dict[Instrument, List[LimitOrder]] = {}
+        self.sells_limit: Dict[Instrument, List[LimitOrder]] = {}
 
     def pos_by_ticker(self, ticker: str) -> Position:
         for pos in self.positions:
@@ -59,12 +28,6 @@ class Trade:
         ticker = instrument.ticker
         return self.pos_by_ticker(ticker)
 
-    def set_defer_order(self, instrument: Instrument, oper, order_type, price: float, count: int):
-        pos = self.pos_by_instrument(instrument)
-        if pos is None:
-            pos = Position(instrument)
-            self.positions.append(pos)
-        pos.set_defer_order(oper, order_type, price, count)
 
     def buy(self, instrument: Instrument, price: float, count: int, order_type, date, time):
         print('buy  : '+instrument.ticker+' '+ date + ' / ' + time + ' / price = '+str(price) + ' / count = '+str(count))
@@ -102,10 +65,10 @@ class Trade:
                 # self.stat.balance_history.append(self.balance)
                 pos.count = count - abs(pos.count)
                 pos.mean_price = price + slip
-        print('Balance = ' + str(self.balance))
+        # print('Balance = ' + str(self.balance))
 
     def sell(self, instrument: Instrument, price: float, count: int, order_type, date, time):
-        print('sell : '+instrument.ticker+' ' + date + ' / ' + time + ' / price = '+str(price) + ' / count = '+str(count))
+        # print('sell : '+instrument.ticker+' ' + date + ' / ' + time + ' / price = '+str(price) + ' / count = '+str(count))
         self.stat.add_sell(instrument, date, time, price, count)
         self.stat.inc_trans()
         if order_type == 'M':
@@ -140,4 +103,4 @@ class Trade:
                 # self.stat.balance_history.append(self.balance)
                 pos.count = abs(pos.count) - count
                 pos.mean_price = price - slip
-        print('Balance = ' + str(self.balance))
+        # print('Balance = ' + str(self.balance))
