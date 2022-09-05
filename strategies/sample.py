@@ -9,7 +9,7 @@ ma_slow = 80
 ma_fast = 10
 
 
-class MASlowFast(BaseCandleStrategy):
+class Sample(BaseCandleStrategy):
 
     def on_strategy_create(self):
         self.add_indicator(MovingAverage(14),
@@ -33,10 +33,7 @@ class MASlowFast(BaseCandleStrategy):
         if None in (cur_slow_prev, cur_fast_prev):
             return
 
-
-        self.sell_limit(si,1,63000, 10)
-        print(len(self.trade.sells_limit[si]))
-
+        self.sell_limit(si, 1, 74500, 10)
         if self.pos_by_ticker('si').count < 0 and cur_fast > cur_slow:
             self.buy_market(si, 1)
 

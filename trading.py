@@ -10,6 +10,7 @@ class Position:
         self.count = 0
         self.mean_price = 0
 
+
 class Trade:
     def __init__(self):
         self.balance = 0
@@ -27,7 +28,6 @@ class Trade:
     def pos_by_instrument(self, instrument: Instrument) -> Position:
         ticker = instrument.ticker
         return self.pos_by_ticker(ticker)
-
 
     def buy(self, instrument: Instrument, price: float, count: int, order_type, date, time):
         print('buy  : '+instrument.ticker+' '+ date + ' / ' + time + ' / price = '+str(price) + ' / count = '+str(count))
