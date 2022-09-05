@@ -77,9 +77,10 @@ class TradeStat:
         df_dict['Close'] = []
         df_dict['Buys'] = []
         df_dict['Sells'] = []
-        for indicator_data in self.indicators[instrument]:
-            for _ in indicator_data.lines:
-                indicators.append([])
+        if self.indicators.get(instrument) is not None:
+            for indicator_data in self.indicators[instrument]:
+                for _ in indicator_data.lines:
+                    indicators.append([])
 
         for candle in self.all_candles[instrument]:
             df_dict['Date'].append(candle['date'] + candle['time'])
@@ -97,23 +98,24 @@ class TradeStat:
             else:
                 df_dict['Sells'].append(self.sells[instrument][candle['date'] + candle['time']]['price'])
             # user indicators to dataframes
-            i = 0
-            for indicator_data in self.indicators[instrument]:
-                for line in indicator_data.lines:
-                    indicators[i].append(line.get(candle['date'] + candle['time']))
-                    i = i + 1
+            if self.indicators.get(instrument) is not None:
+                i = 0
+                for indicator_data in self.indicators[instrument]:
+                    for line in indicator_data.lines:
+                        indicators[i].append(line.get(candle['date'] + candle['time']))
+                        i = i + 1
 
         # for ind in indicators:
         #     ind_sub_plots.append(mpf.make_addplot(pd.DataFrame(ind), panel = 1))
-
-        i = 0
-        for indicator_data in self.indicators[instrument]:
-            for _ in indicator_data.lines:
-                ind_sub_plots.append(mpf.make_addplot(pd.DataFrame(indicators[i]),
-                                                      panel=indicator_data.panel,
-                                                      color=indicator_data.color,
-                                                      type=indicator_data.type))
-                i = i + 1
+        if self.indicators.get(instrument) is not None:
+            i = 0
+            for indicator_data in self.indicators[instrument]:
+                for _ in indicator_data.lines:
+                    ind_sub_plots.append(mpf.make_addplot(pd.DataFrame(indicators[i]),
+                                                          panel=indicator_data.panel,
+                                                          color=indicator_data.color,
+                                                          type=indicator_data.type))
+                    i = i + 1
 
         df = pd.DataFrame(df_dict)
         df = df.set_index('Date')
