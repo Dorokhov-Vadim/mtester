@@ -19,13 +19,13 @@ class Sample(BaseCandleStrategy):
                            color="b")
 
     def on_candle_close(self, closed_candles: Dict[Instrument, List[Candle]]):
+        print("next call")
 
         si = self.pos_by_ticker('si').instrument
         cur_fast_prev = self.get_ind_by_candle(si,"ma_fast",0,closed_candles[si][-2])
         cur_fast = self.get_ind_by_candle(si, "ma_fast", 0, closed_candles[si][-1])
         cur_slow_prev = self.get_ind_by_candle(si, "ma_slow", 0, closed_candles[si][-2])
         cur_slow = self.get_ind_by_candle(si, "ma_slow", 0, closed_candles[si][-1])
-
 
         if None in (cur_slow_prev, cur_fast_prev):
             return
