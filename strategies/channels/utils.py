@@ -1,4 +1,4 @@
-from mtester.providers import Candle
+from lib.mtester.providers import Candle
 from typing import List
 from strategies.channels.channel import Channel
 import matplotlib.pyplot as plt

@@ -1,4 +1,4 @@
-from mtester.providers import Candle
+from lib.mtester.providers import Candle
 from typing import List, Callable
 from sklearn.linear_model import QuantileRegressor
 from sklearn.utils.validation import column_or_1d

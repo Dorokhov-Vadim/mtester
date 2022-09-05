@@ -1,6 +1,4 @@
 from strategies.channels.channel import Channel, Line
-from mtester.providers import Candle
-from typing import List
 
 
 class HoldChannelEstimator:
