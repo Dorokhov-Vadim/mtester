@@ -8,7 +8,7 @@ import warnings
 
 class BaseCandleStrategy:
     def __init__(self, window_size: int):
-        self.cur_candles: dict[Instrument, CurCandle]
+        self.cur_candles: Dict[Instrument, CurCandle]
         self.cur_date = ''
         self.cur_time = ''
         self.trade = Trade()
@@ -43,10 +43,7 @@ class BaseCandleStrategy:
         self.trade.buys_limit[instrument].append(LimitOrder(price, count, life_time))
 
     def sell_limit(self, instrument: Instrument, count: int, price: float, life_time: int):
-        print('-----' + str(price) + "   " + str(self.cur_candles[instrument].price) +'  '+ self.cur_time )
         if price < self.cur_candles[instrument].price:
-            # print('-----' + str(price) + "   " + str(self.cur_candles[instrument].price))
-
             self.sell_market(instrument, count)
             return
         if self.trade.sells_limit.get(instrument) is None:
