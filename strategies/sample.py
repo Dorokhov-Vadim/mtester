@@ -1,6 +1,5 @@
 from mtester.base_strategies import BaseCandleStrategy
 from mtester.indicators.mov_average import MovingAverage
-from mtester.indicators.stochastic_oscillator import StochasticOscillator
 from typing import List, Dict
 from mtester.instruments import Instrument
 from mtester.providers import Candle, CurCandle
@@ -22,7 +21,6 @@ class Sample(BaseCandleStrategy):
                            "ma_slow",
                            color="b")
 
-
     def on_candle_close(self, closed_candles: Dict[Instrument, List[Candle]]):
         si = self.pos_by_ticker('si').instrument
         cur_fast_prev = self.get_ind_by_candle(si,"ma_fast",0,closed_candles[si][-2])
@@ -33,23 +31,16 @@ class Sample(BaseCandleStrategy):
         if None in (cur_slow_prev, cur_fast_prev):
             return
 
-        self.sell_limit(si, 1, 74500, 10)
-        if self.pos_by_ticker('si').count < 0 and cur_fast > cur_slow:
+        if self.pos_by_ticker('si').count == 0 and cur_fast > cur_slow and cur_fast_prev < cur_slow_prev:
             self.buy_market(si, 1)
 
+        if self.pos_by_ticker('si').count == 0 and cur_fast < cur_slow and cur_fast_prev > cur_slow_prev:
+            self.sell_market(si, 1)
 
-        # if self.pos_by_ticker('si').count == 0 and cur_fast > cur_slow and cur_fast_prev < cur_slow_prev:
-        #     self.buy_market(si, 1)
-        #
-        # if self.pos_by_ticker('si').count == 0 and cur_fast < cur_slow and cur_fast_prev > cur_slow_prev:
-        #     self.sell_market(si, 1)
-        #
-        # if self.pos_by_ticker('si').count == 1 and cur_fast<cur_slow:
-        #     self.sell_market(si, 2)
-        #
-        # if self.pos_by_ticker('si').count == -1 and cur_fast>cur_slow:
-        #     self.buy_market(si, 2)
+        if self.pos_by_ticker('si').count == 1 and cur_fast<cur_slow:
+            self.sell_market(si, 2)
 
-
+        if self.pos_by_ticker('si').count == -1 and cur_fast>cur_slow:
+            self.buy_market(si, 2)
 
 
