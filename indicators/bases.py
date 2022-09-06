@@ -1,6 +1,6 @@
 """Base class for all indicators classes"""
 from ..providers import Candle
-from typing import  List, Dict
+from typing import List, Dict
 
 
 class BaseCandleIndicator:
