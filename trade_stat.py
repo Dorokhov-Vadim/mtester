@@ -7,6 +7,7 @@ import pandas as pd
 import mplfinance as mpf
 from .indicators.bases import IndicatorData
 
+
 class TradeStat:
     def __init__(self):
         self.balance_hist = []
@@ -15,6 +16,7 @@ class TradeStat:
         self.buys: Dict[Instrument, Dict] = dict()
         self.sells: Dict[Instrument, Dict] = dict()
         self.indicators: Dict[Instrument, List[IndicatorData]] = {}
+        self.max_load: Dict[Instrument, int] = {}
 
     def inc_trans(self):
         self.trans_count = self.trans_count + 1
@@ -51,17 +53,19 @@ class TradeStat:
 
     def show_trade_stat(self):
         all_loses = []
-        print('Trans count = '+str(self.trans_count))
+        print('Trans count = ' + str(self.trans_count))
         for instrument in self.all_candles:
             loses = []
             for candle in self.all_candles[instrument]:
                 loses.append(candle['lose'])
             all_loses.append(loses)
             print('Max lose of ' + instrument.ticker + ' = ' + str(max(*loses)))
+            print('Max contracts of ' + instrument.ticker + ' = ' + str(self.max_load.get(instrument)))
         sum_loses = [sum(loses) for loses in zip(*all_loses)]
         # print(sum_loses)
-        print('Permanent complex lose = '+str(max(*sum_loses)))
-        print('Balance = '+str(self.balance_hist[-1]))
+        print('Permanent complex lose = ' + str(max(*sum_loses)))
+
+        print('Balance = ' + str(self.balance_hist[-1]))
         _, (ax1) = plt.subplots(1, 1, sharex=True, num="Balance dynamic")
         ax1.plot([num for num in range(0, len(self.balance_hist))], self.balance_hist, 'r-')
         plt.show()
@@ -105,8 +109,6 @@ class TradeStat:
                         indicators[i].append(line.get(candle['date'] + candle['time']))
                         i = i + 1
 
-        # for ind in indicators:
-        #     ind_sub_plots.append(mpf.make_addplot(pd.DataFrame(ind), panel = 1))
         if self.indicators.get(instrument) is not None:
             i = 0
             for indicator_data in self.indicators[instrument]:
@@ -124,19 +126,19 @@ class TradeStat:
         buys = mpf.make_addplot(pd.DataFrame(df_dict['Buys']), color='g', type='scatter', marker='^')
         sells = mpf.make_addplot(pd.DataFrame(df_dict['Sells']), color='r', type='scatter', marker='v')
 
-
-
-        mpf.plot(df, type='candle',
-                 title='\nInstrument: ' + instrument.ticker,
-                 addplot=[buys, sells] + ind_sub_plots ,
-                 warn_too_much_data=len(self.all_candles[instrument]))
+        fig, _ = mpf.plot(df, type='candle',
+                          title='\nInstrument: ' + instrument.ticker,
+                          addplot=[buys, sells] + ind_sub_plots,
+                          warn_too_much_data=len(self.all_candles[instrument]), returnfig=True)
+        fig.canvas.manager.set_window_title('Instrument dynamic')
+        plt.show()
 
     def get_line(self, instrument: Instrument, name, line_num):
         for ind in self.indicators[instrument]:
             if ind.name == name:
                 return ind.lines[line_num]
 
-    def get_ind_by_candle(self,instrument: Instrument, name, line_num, candle):
+    def get_ind_by_candle(self, instrument: Instrument, name, line_num, candle):
         for ind in self.indicators[instrument]:
             if ind.name == name:
-                return ind.lines[line_num].get(candle.date+candle.time)
+                return ind.lines[line_num].get(candle.date + candle.time)

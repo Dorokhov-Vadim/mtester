@@ -98,6 +98,8 @@ class BaseCandleStrategy:
 
         for instrument in self.trade.buys_limit:
             candle_low = self.candles_dict[instrument][-1].low
+            self.trade.buys_limit[instrument] = [order for order in self.trade.buys_limit[instrument]
+                                                 if not order.deleted and order.life_time > order.cur_life]
             for order in self.trade.buys_limit[instrument]:
                 if candle_low < order.price:
                     self.trade.buy(instrument, order.price, order.count, "L",
@@ -105,11 +107,12 @@ class BaseCandleStrategy:
                                     self.candles_dict[instrument][-1].time)
                     order.deleted = True
                 order.cur_life = order.cur_life + 1
-            self.trade.buys_limit[instrument] = [order for order in self.trade.buys_limit[instrument]
-                                                 if not order.deleted and order.life_time >= order.cur_life]
+
 
         for instrument in self.trade.sells_limit:
             candle_high = self.candles_dict[instrument][-1].high
+            self.trade.sells_limit[instrument] = [order for order in self.trade.sells_limit[instrument]
+                                                  if not order.deleted and order.life_time > order.cur_life]
             for order in self.trade.sells_limit[instrument]:
 
                 if candle_high > order.price:
@@ -118,5 +121,4 @@ class BaseCandleStrategy:
                                     self.candles_dict[instrument][-1].time)
                     order.deleted = True
                 order.cur_life = order.cur_life + 1
-            self.trade.sells_limit[instrument] = [order for order in self.trade.sells_limit[instrument]
-                                                 if not order.deleted and order.life_time >= order.cur_life]
+

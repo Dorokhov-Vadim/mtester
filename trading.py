@@ -20,6 +20,7 @@ class Trade:
         self.buys_limit: Dict[Instrument, List[LimitOrder]] = {}
         self.sells_limit: Dict[Instrument, List[LimitOrder]] = {}
 
+
     def pos_by_ticker(self, ticker: str) -> Position:
         for pos in self.positions:
             if pos.instrument.ticker.lower() == ticker.lower():
@@ -65,6 +66,9 @@ class Trade:
                 # self.stat.balance_history.append(self.balance)
                 pos.count = count - abs(pos.count)
                 pos.mean_price = price + slip
+        if self.stat.max_load.get(instrument) is None:
+            self.stat.max_load[instrument] = 0
+        self.stat.max_load[instrument] = max(abs(pos.count), self.stat.max_load[instrument])
         print('Balance = ' + str(self.balance))
 
     def sell(self, instrument: Instrument, price: float, count: int, order_type, date, time):
@@ -103,4 +107,7 @@ class Trade:
                 # self.stat.balance_history.append(self.balance)
                 pos.count = abs(pos.count) - count
                 pos.mean_price = price - slip
+        if self.stat.max_load.get(instrument) is None:
+            self.stat.max_load[instrument] = 0
+        self.stat.max_load[instrument] = max(abs(pos.count), self.stat.max_load[instrument])
         print('Balance = ' + str(self.balance))
