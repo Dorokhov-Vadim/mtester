@@ -5,10 +5,10 @@ from typing import List, Dict
 
 class BaseCandleIndicator:
     def get_value(self, candles: List[Candle]):
-        raise Exception(self.__class__.__name__ +' must implement get_value() method')
+        raise Exception(self.__class__.__name__ + ' must implement get_value() method')
 
 class IndicatorData:
-    def __init__(self, indicator: BaseCandleIndicator, name: str, panel=0, type='line', color='b', marker='o'):
+    def __init__(self, indicator: BaseCandleIndicator, name: str, panel=0, type='scatter', color='b', marker='o'):
         self.indicator = indicator
         self.name: str = name
         self.panel = panel
