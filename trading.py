@@ -1,7 +1,7 @@
 from typing import List, Dict
 from .instruments import Instrument
 from .trade_stat import TradeStat
-from .providers import LimitOrder
+from .providers import LimitOrder, Candle
 
 
 class Position:
@@ -19,7 +19,6 @@ class Trade:
         self.stat = TradeStat()
         self.buys_limit: Dict[Instrument, List[LimitOrder]] = {}
         self.sells_limit: Dict[Instrument, List[LimitOrder]] = {}
-
 
     def pos_by_ticker(self, ticker: str) -> Position:
         for pos in self.positions:
@@ -44,14 +43,14 @@ class Trade:
             self.positions.append(pos)
         # add long position
         if pos.count >= 0:
-            pos.mean_price = (pos.mean_price * pos.count + (price + slip) * count)/(pos.count + count)
+            pos.mean_price = (pos.mean_price * pos.count + (price + slip) * count) / (pos.count + count)
             pos.count = pos.count + count
         # closing short position
         else:
             # if not (short -> long)
             if abs(pos.count) >= count:
                 margin = (pos.mean_price - (price + slip)) * count
-                self.balance = self.balance + (margin//instrument.step)*instrument.step_price
+                self.balance = self.balance + (margin // instrument.step) * instrument.step_price
                 # mean pos price is not changed
                 if count == abs(pos.count):
                     # all pos is closed
@@ -62,7 +61,7 @@ class Trade:
             else:
                 # if (short -> long)
                 margin = abs(pos.mean_price * pos.count) - (price + slip) * abs(pos.count)
-                self.balance = self.balance + (margin//instrument.step)*instrument.step_price
+                self.balance = self.balance + (margin // instrument.step) * instrument.step_price
                 # self.stat.balance_history.append(self.balance)
                 pos.count = count - abs(pos.count)
                 pos.mean_price = price + slip
@@ -111,3 +110,30 @@ class Trade:
             self.stat.max_load[instrument] = 0
         self.stat.max_load[instrument] = max(abs(pos.count), self.stat.max_load[instrument])
         print('Balance = ' + str(self.balance))
+
+    def limit_orders_processing(self, candles_dict: dict[Instrument, List[Candle]]):
+
+        for instrument in self.buys_limit:
+            candle_low = candles_dict[instrument][-1].low
+            self.buys_limit[instrument] = [order for order in self.buys_limit[instrument]
+                                           if not order.deleted and order.life_time > order.cur_life]
+            for order in self.buys_limit[instrument]:
+                if candle_low < order.price:
+                    self.buy(instrument, order.price, order.count, "L",
+                             candles_dict[instrument][-1].date,
+                             candles_dict[instrument][-1].time)
+                    order.deleted = True
+                order.cur_life = order.cur_life + 1
+
+        for instrument in self.sells_limit:
+            candle_high = candles_dict[instrument][-1].high
+            self.sells_limit[instrument] = [order for order in self.sells_limit[instrument]
+                                            if not order.deleted and order.life_time > order.cur_life]
+            for order in self.sells_limit[instrument]:
+
+                if candle_high > order.price:
+                    self.sell(instrument, order.price, order.count, "L",
+                              candles_dict[instrument][-1].date,
+                              candles_dict[instrument][-1].time)
+                    order.deleted = True
+                order.cur_life = order.cur_life + 1
