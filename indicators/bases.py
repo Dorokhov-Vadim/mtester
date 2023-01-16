@@ -20,7 +20,7 @@ class IndicatorData:
     def calc_indicator_for_candles(self, instrument_candles: List[Candle]):
         i = 0
         values = self.indicator.get_value(instrument_candles)
-        if not isinstance(values,tuple):
+        if not isinstance(values, tuple):
            values = values,
         for line_value in values:
             if len(self.lines) < (i+1):
