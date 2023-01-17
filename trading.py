@@ -1,7 +1,7 @@
 from typing import List, Dict
 from .instruments import Instrument
 from .trade_stat import TradeStat
-from .providers import LimitOrder, Candle
+from .providers import Candle
 
 
 class Position:
@@ -9,6 +9,23 @@ class Position:
         self.instrument: Instrument = instrument
         self.count = 0
         self.mean_price = 0
+
+
+class LimitOrder:
+    def __init__(self, price, count, life_time):
+        self.price: float = price
+        self.count: int = count
+        self.life_time: int = life_time
+        self.cur_life: int = 0
+        self.deleted = False
+
+
+class DeferredOrder:
+
+    def __init__(self, price: float, count: int):
+        self.price: float = price
+        self.count: int = count
+        self.deleted = False
 
 
 class Trade:
@@ -19,6 +36,8 @@ class Trade:
         self.stat = TradeStat()
         self.buys_limit: Dict[Instrument, List[LimitOrder]] = {}
         self.sells_limit: Dict[Instrument, List[LimitOrder]] = {}
+        self.buys_deferred: Dict[Instrument, List[DeferredOrder]] = {}
+        self.sells_deferred: Dict[Instrument, List[DeferredOrder]] = {}
 
     def pos_by_ticker(self, ticker: str) -> Position:
         for pos in self.positions:
@@ -137,3 +156,40 @@ class Trade:
                               candles_dict[instrument][-1].time)
                     order.deleted = True
                 order.cur_life = order.cur_life + 1
+
+    def defer_orders_processing(self, candles_dict: dict[Instrument, List[Candle]]):
+        for instrument in self.sells_deferred:
+            candle_open = candles_dict[instrument][-1].open
+            candle_low = candles_dict[instrument][-1].low
+
+            self.sells_deferred[instrument] = [order for order in self.sells_deferred[instrument]
+                                               if not order.deleted]
+            for order in self.sells_deferred[instrument]:
+                if candle_open <= order.price:
+                    self.sell(instrument, candle_open, order.count, "M",
+                              candles_dict[instrument][-1].date,
+                              candles_dict[instrument][-1].time)
+                    order.deleted = True
+                elif candle_open > order.price > candle_low:
+                    self.sell(instrument, order.price, order.count, "M",
+                              candles_dict[instrument][-1].date,
+                              candles_dict[instrument][-1].time)
+                    order.deleted = True
+
+        for instrument in self.buys_deferred:
+            candle_open = candles_dict[instrument][-1].open
+            candle_high = candles_dict[instrument][-1].high
+
+            self.buys_deferred[instrument] = [order for order in self.buys_deferred[instrument]
+                                              if not order.deleted]
+            for order in self.buys_deferred[instrument]:
+                if candle_open >= order.price:
+                    self.buy(instrument, candle_open, order.count, "M",
+                             candles_dict[instrument][-1].date,
+                             candles_dict[instrument][-1].time)
+                    order.deleted = True
+                elif candle_open < order.price < candle_high:
+                    self.buy(instrument, order.price, order.count, "M",
+                             candles_dict[instrument][-1].date,
+                             candles_dict[instrument][-1].time)
+                    order.deleted = True

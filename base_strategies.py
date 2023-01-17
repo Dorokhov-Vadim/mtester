@@ -1,6 +1,6 @@
 from typing import List, Dict
-from .trading import Trade, Position
-from .providers import Candle, CurCandle, LimitOrder
+from .trading import Trade, Position, LimitOrder, DeferredOrder
+from .providers import Candle, CurCandle
 from .instruments import Instrument
 from .indicators.bases import IndicatorData
 import warnings
@@ -8,7 +8,7 @@ import warnings
 
 class BaseCandleStrategy:
     def __init__(self, window_size: int):
-        self.cur_candles: Dict[Instrument, CurCandle]
+        self.cur_candles: Dict[Instrument, CurCandle] = {}
         self.cur_date = ''
         self.cur_time = ''
         self.trade = Trade()
@@ -34,7 +34,7 @@ class BaseCandleStrategy:
     def sell_market(self, instrument: Instrument, count: int):
         self.sell(instrument, self.cur_candles[instrument].price, count, 'M')
 
-    def buy_limit(self, instrument: Instrument, count: int, price: float, life_time: int):
+    def set_limit_buy(self, instrument: Instrument, count: int, price: float, life_time: int):
         if price > self.cur_candles[instrument].price:
             self.buy_market(instrument, count)
             return
@@ -42,7 +42,7 @@ class BaseCandleStrategy:
             self.trade.buys_limit[instrument] = []
         self.trade.buys_limit[instrument].append(LimitOrder(price, count, life_time))
 
-    def sell_limit(self, instrument: Instrument, count: int, price: float, life_time: int):
+    def set_limit_sell(self, instrument: Instrument, count: int, price: float, life_time: int):
         if price < self.cur_candles[instrument].price:
             self.sell_market(instrument, count)
             return
@@ -69,6 +69,7 @@ class BaseCandleStrategy:
                     self.is_created = True
                 self.calc_indicators_for_candles()
                 self.trade.limit_orders_processing(self.candles_dict)
+                self.trade.defer_orders_processing(self.candles_dict)
                 self.on_candle_close(self.candles_dict)
 
     def on_strategy_create(self):
@@ -93,3 +94,50 @@ class BaseCandleStrategy:
 
     def get_ind_by_candle(self, instrument: Instrument, name, line_num, candle):
         return self.trade.stat.get_ind_by_candle(instrument, name, line_num, candle)
+
+    def set_defer_buy(self, instrument: Instrument, price: float, count: int):
+        if price < self.cur_candles[instrument].price:
+            print('WARNING: SET DEFER BUY: CURRENT PRICE IS UPPER THEN ORDER PRICE')
+            self.buy_market(instrument, count)
+            return
+        if self.trade.buys_deferred.get(instrument) is None:
+            self.trade.buys_deferred[instrument] = []
+        self.trade.buys_deferred[instrument].append(DeferredOrder(price, count))
+
+    def set_defer_sell(self, instrument: Instrument, price: float, count: int):
+        if price > self.cur_candles[instrument].price:
+            print('WARNING: SET DEFER SELL: CURRENT PRICE IS LOWER THEN ORDER PRICE')
+            self.sell_market(instrument, count)
+            return
+        if self.trade.sells_deferred.get(instrument) is None:
+            self.trade.sells_deferred[instrument] = []
+        self.trade.sells_deferred[instrument].append(DeferredOrder(price, count))
+
+    def get_limit_buys(self,  instrument: Instrument):
+        if self.trade.buys_limit.get(instrument) is None:
+            return []
+        return self.trade.buys_limit[instrument]
+
+    def get_limit_sells(self,  instrument: Instrument):
+        if self.trade.sells_limit.get(instrument) is None:
+            return []
+        return self.trade.sells_limit[instrument]
+
+    def get_defer_buys(self, instrument: Instrument):
+        if self.trade.buys_deferred.get(instrument) is None:
+            return []
+        return self.trade.buys_deferred[instrument]
+
+    def get_defer_sells(self, instrument: Instrument):
+        if self.trade.sells_deferred.get(instrument) is None:
+            return []
+        return self.trade.sells_deferred[instrument]
+
+    def cancel_all_defer_buy(self, instrument: Instrument):
+        if self.trade.buys_deferred.get(instrument) is not None:
+            self.trade.buys_deferred[instrument] = []
+
+    def cancel_all_defer_sell(self, instrument: Instrument):
+        if self.trade.sells_deferred.get(instrument) is not None:
+            self.trade.sells_deferred[instrument] = []
+

@@ -23,13 +23,7 @@ class CurCandle:
         self.price = 0
 
 
-class LimitOrder:
-    def __init__(self, price, count, life_time):
-        self.price: float = price
-        self.count: int = count
-        self.life_time: int = life_time
-        self.cur_life: int = 0
-        self.deleted = False
+
 
 
 class BaseCandlesProvider(Iterator):
