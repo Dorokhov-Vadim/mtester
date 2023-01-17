@@ -141,3 +141,11 @@ class BaseCandleStrategy:
         if self.trade.sells_deferred.get(instrument) is not None:
             self.trade.sells_deferred[instrument] = []
 
+    def cancel_all_limit_buy(self, instrument: Instrument):
+        if self.trade.buys_limit.get(instrument) is not None:
+            self.trade.buys_limit[instrument] = []
+
+    def cancel_all_limit_sell(self, instrument: Instrument):
+        if self.trade.sells_limit.get(instrument) is not None:
+            self.trade.sells_limit[instrument] = []
+
