@@ -90,7 +90,7 @@ class Trade:
         print('Balance = ' + str(self.balance))
 
     def sell(self, instrument: Instrument, price: float, count: int, order_type, date, time):
-        # print('sell : '+instrument.ticker+' ' + date + ' / ' + time + ' / price = '+str(price) + ' / count = '+str(count))
+        print('sell : '+instrument.ticker+' ' + date + ' / ' + time + ' / price = '+str(price) + ' / count = '+str(count))
         self.stat.add_sell(instrument, date, time, price, count)
         self.stat.inc_trans()
         if order_type == 'M':

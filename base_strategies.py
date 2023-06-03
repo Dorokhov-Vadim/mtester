@@ -111,6 +111,7 @@ class BaseCandleStrategy:
             return
         if self.trade.sells_deferred.get(instrument) is None:
             self.trade.sells_deferred[instrument] = []
+        print('append')
         self.trade.sells_deferred[instrument].append(DeferredOrder(price, count))
 
     def get_limit_buys(self,  instrument: Instrument):
