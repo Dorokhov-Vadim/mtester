@@ -49,7 +49,7 @@ class Trade:
         return self.pos_by_ticker(ticker)
 
     def buy(self, instrument: Instrument, price: float, count: int, order_type, date, time):
-        # print('buy  : '+instrument.ticker+' '+ date + ' / ' + time + ' / price = '+str(price) + ' / count = '+str(count))
+        print('buy  : '+instrument.ticker+' '+ date + ' / ' + time + ' / price = '+str(price) + ' / count = '+str(count))
         self.stat.add_buy(instrument, date, time, price, count)
         self.stat.inc_trans()
         if order_type == 'M':
