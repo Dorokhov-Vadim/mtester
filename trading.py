@@ -50,6 +50,7 @@ class Trade:
 
     def buy(self, instrument: Instrument, price: float, count: int, order_type, date, time):
         print('buy  : '+instrument.ticker+' '+ date + ' / ' + time + ' / price = '+str(price) + ' / count = '+str(count))
+
         self.stat.add_buy(instrument, date, time, price, count)
         self.stat.inc_trans()
         if order_type == 'M':
@@ -88,6 +89,7 @@ class Trade:
             self.stat.max_load[instrument] = 0
         self.stat.max_load[instrument] = max(abs(pos.count), self.stat.max_load[instrument])
         print('Balance = ' + str(self.balance))
+        print(self.pos_by_instrument(instrument).count)
 
     def sell(self, instrument: Instrument, price: float, count: int, order_type, date, time):
         print('sell : '+instrument.ticker+' ' + date + ' / ' + time + ' / price = '+str(price) + ' / count = '+str(count))
@@ -129,6 +131,8 @@ class Trade:
             self.stat.max_load[instrument] = 0
         self.stat.max_load[instrument] = max(abs(pos.count), self.stat.max_load[instrument])
         print('Balance = ' + str(self.balance))
+        print(self.pos_by_instrument(instrument).count)
+
 
     def limit_orders_processing(self, candles_dict: dict[Instrument, List[Candle]]):
 

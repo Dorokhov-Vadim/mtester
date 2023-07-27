@@ -8,12 +8,12 @@ from ..providers import Candle
 class Sample(BaseCandleStrategy):
 
     def on_strategy_create(self):
-        self.add_indicator(MovingAverage(14),
+        self.add_indicator(MovingAverage(5),
                            self.pos_by_ticker('si').instrument,
                            "ma_fast",
                            color="r")
 
-        self.add_indicator(MovingAverage(60),
+        self.add_indicator(MovingAverage(30),
                            self.pos_by_ticker('si').instrument,
                            "ma_slow",
                            color="b")
